@@ -1,0 +1,47 @@
+
+import { boolean, index, integer, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { imageTypeEnum, userRoleEnum } from "./enum";
+
+
+// ==================== 1. Users (Base Table) ====================
+export const users = pgTable("users", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    fullName: varchar("full_name", { length: 150 }).notNull(),
+    phoneNumber: varchar("phone_number", { length: 20 }).unique(),
+    email: varchar("email", { length: 100 }).unique(),
+    role: userRoleEnum("role").notNull().default("customer"),
+    isActive: boolean("is_active").default(true).notNull(),
+    userAgent: varchar("user_agent", { length: 255 }),
+    ipAddress: varchar("ip_address", { length: 50 }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
+}, (table) => [
+    index("users_phone_idx").on(table.phoneNumber),
+    index("users_email_idx").on(table.email),
+    index("users_role_idx").on(table.role),
+]);
+
+// ==================== 2. User Credentials ====================
+export const userCredentials = pgTable("user_credentials", {
+    userId: uuid("user_id").primaryKey().notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+    passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
+});
+
+// ==================== 3. User Images ====================
+export const userImages = pgTable("user_images", {
+    userId: uuid("user_id").primaryKey().notNull().references(() => users.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    imageKey: text("image_key").notNull(),
+    width: integer("width"),
+    height: integer("height"),
+    size: integer("size"),
+    type: imageTypeEnum("type").default("profile").notNull(),
+    isPrimary: boolean("is_primary").default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
+}, (table) => [
+    index("user_images_type_idx").on(table.type),
+    index("user_images_is_primary_idx").on(table.isPrimary),
+]);
