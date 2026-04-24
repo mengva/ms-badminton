@@ -33,7 +33,7 @@ export const users = pgTable("users", {
     email: varchar("email", { length: 100 }).unique(),
     role: userRoleEnum("role").notNull().default("Customer"),
     isActive: boolean("is_active").default(true).notNull(),
-    userAgent: varchar("user_agent", { length: 255 }),
+    userAgent: varchar("user_agent", { length: 255 }).notNull(),
     ipAddress: varchar("ip_address", { length: 50 }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
@@ -52,20 +52,24 @@ export const userCredentials = pgTable("user_credentials", {
 });
 
 // ==================== 3. User Images ====================
-export const userImages = pgTable("user_images", {
-    userId: uuid("user_id").primaryKey().notNull().references(() => users.id, { onDelete: "cascade" }),
+export const images = pgTable("images", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    courtId: uuid("court_id").references(() => courts.id, { onDelete: "cascade" }),
     url: text("url").notNull(),
     imageKey: text("image_key").notNull(),
-    width: integer("width"),
-    height: integer("height"),
-    size: integer("size"),
+    width: integer("width").notNull(),
+    height: integer("height").notNull(),
+    size: integer("size").notNull(),
     type: imageTypeEnum("type").default("profile").notNull(),
     isPrimary: boolean("is_primary").default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (table) => [
-    index("user_images_type_idx").on(table.type),
-    index("user_images_is_primary_idx").on(table.isPrimary),
+    index("images_user_id_idx").on(table.userId),
+    index("images_court_id_idx").on(table.courtId),
+    index("images_type_idx").on(table.type),
+    index("images_is_primary_idx").on(table.isPrimary),
 ]);
 
 // ==================== 4. Court Owners Extension ====================
@@ -84,6 +88,7 @@ export const courtOwners = pgTable("court_owners", {
 // FIX #3: Tshem `id` tawm — siv userId ua primary key xwb (tsis pub muaj 2 PK)
 export const staffs = pgTable("staffs", {
     userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+    salary: numeric("salary", { precision: 10, scale: 2 }),
     position: varchar("position", { length: 100 }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
@@ -135,7 +140,7 @@ export const courts = pgTable("courts", {
 export const bookings = pgTable("bookings", {
     id: uuid("id").defaultRandom().primaryKey(),
     customerId: uuid("customer_id").notNull().references(() => customers.userId, { onDelete: "cascade" }),
-    cancelledBy: uuid("cancelled_by").references(() => users.id, { onDelete: "cascade" }),
+    cancelledById: uuid("cancelled_by_id").references(() => users.id, { onDelete: "cascade" }),
     courtId: uuid("court_id").notNull().references(() => courts.id, { onDelete: "cascade" }),
     staffId: uuid("staff_id").references(() => staffs.userId, { onDelete: "cascade" }),
     bookingDate: date("booking_date").notNull(),
@@ -146,14 +151,14 @@ export const bookings = pgTable("bookings", {
     totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
     status: bookingStatusEnum("status").default("Pending"),
     cancelReason: text("cancel_reason"),
-    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }).defaultNow().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (table) => [
     index("bookings_customer_id_idx").on(table.customerId),
     index("bookings_court_id_idx").on(table.courtId),
     index("bookings_staff_id_idx").on(table.staffId),
-    index("bookings_cancelled_by_idx").on(table.cancelledBy),
+    index("bookings_cancelled_by_id_idx").on(table.cancelledById),
     index("bookings_date_idx").on(table.bookingDate),
     index("bookings_status_idx").on(table.status),
 ]);
@@ -198,7 +203,7 @@ export const payments = pgTable("payments", {
     amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
     paymentType: paymentTypeEnum("payment_type").notNull(),
     paymentMethod: paymentMethodEnum("payment_method").notNull(),
-    paymentDate: timestamp("payment_date", { withTimezone: true }).defaultNow(),
+    paymentDate: timestamp("payment_date", { withTimezone: true }).defaultNow().notNull(),
     notes: text("notes"),
     referenceNumber: varchar("reference_number", { length: 100 }),
     status: paymentStatusEnum("status").default("Paid"),
@@ -219,7 +224,7 @@ export const invoices = pgTable("invoices", {
     staffId: uuid("staff_id").references(() => staffs.userId),
     totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
     paidAmount: numeric("paid_amount", { precision: 10, scale: 2 }).default("0.00"),
-    invoiceDate: timestamp("invoice_date", { withTimezone: true }).defaultNow(),
+    invoiceDate: timestamp("invoice_date", { withTimezone: true }).defaultNow().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (table) => [
@@ -235,7 +240,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
         fields: [users.id],
         references: [userCredentials.userId],
     }),
-    images: many(userImages),
+    images: many(images),
     courtOwner: one(courtOwners, {
         fields: [users.id],
         references: [courtOwners.userId],
@@ -248,7 +253,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
         fields: [users.id],
         references: [customers.userId],
     }),
-    courtsOwned: many(courts),
+    courts: many(courts),
 }));
 
 export const userCredentialsRelations = relations(userCredentials, ({ one }) => ({
@@ -258,15 +263,15 @@ export const userCredentialsRelations = relations(userCredentials, ({ one }) => 
     }),
 }));
 
-// FIX #6: Ntxiv userImagesRelations uas ploj lawm
-export const userImagesRelations = relations(userImages, ({ one }) => ({
+// FIX #6: Added this imagesRelations uas ploj lawm
+export const imagesRelations = relations(images, ({ one }) => ({
     user: one(users, {
-        fields: [userImages.userId],
+        fields: [images.userId],
         references: [users.id],
     }),
     court: one(courts, {
-        fields: [userImages.userId],
-        references: [courts.ownerId],
+        fields: [images.courtId],
+        references: [courts.id],
     }),
 }));
 
@@ -310,7 +315,7 @@ export const courtsRelations = relations(courts, ({ one, many }) => ({
         fields: [courts.ownerId],
         references: [users.id],
     }),
-    images: many(userImages),
+    images: many(images),
     type: one(courtTypes, {
         fields: [courts.typeId],
         references: [courtTypes.id],
@@ -346,7 +351,7 @@ export const bookingsRelations = relations(bookings, ({ one, many }) => ({
     }),
 }));
 
-// FIX #8: Ntxiv fields/references rau checkInsRelations
+// FIX #8: Added this fields/references in checkInsRelations
 export const checkInsRelations = relations(checkIns, ({ one }) => ({
     booking: one(bookings, {
         fields: [checkIns.bookingId],
@@ -358,7 +363,7 @@ export const checkInsRelations = relations(checkIns, ({ one }) => ({
     }),
 }));
 
-// FIX #9: Ntxiv fields/references rau checkOutsRelations
+// FIX #9: Added this fields/references in checkOutsRelations
 export const checkOutsRelations = relations(checkOuts, ({ one }) => ({
     booking: one(bookings, {
         fields: [checkOuts.bookingId],
@@ -370,7 +375,7 @@ export const checkOutsRelations = relations(checkOuts, ({ one }) => ({
     }),
 }));
 
-// FIX #10: Ntxiv fields/references rau paymentsRelations
+// FIX #10: Added this fields/references in paymentsRelations
 export const paymentsRelations = relations(payments, ({ one }) => ({
     booking: one(bookings, {
         fields: [payments.bookingId],
@@ -386,7 +391,7 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
     }),
 }));
 
-// FIX #11: Ntxiv fields/references rau invoicesRelations
+// FIX #11: Added this fields/references in invoicesRelations
 export const invoicesRelations = relations(invoices, ({ one }) => ({
     booking: one(bookings, {
         fields: [invoices.bookingId],

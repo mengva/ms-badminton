@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { userCredentials, userImages, users } from "./user";
+import { userCredentials, images, users } from "./user";
 import { courtOwners, customers, staffs } from "@/server/db";
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -7,7 +7,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
         fields: [users.id],
         references: [userCredentials.userId],
     }),
-    images: many(userImages),
+    images: many(images),
     staff: one(staffs, {
         fields: [users.id],
         references: [staffs.userId],
@@ -29,9 +29,9 @@ export const userCredentialsRelations = relations(userCredentials, ({ one }) => 
     }),
 }));
 
-export const userImagesRelations = relations(userImages, ({ one }) => ({
+export const imagesRelations = relations(images, ({ one }) => ({
     user: one(users, {
-        fields: [userImages.userId],
+        fields: [images.userId],
         references: [users.id],
     }),
 }));

@@ -4,9 +4,7 @@ export interface ResponseFileDto {
     url: string;
     size: number;
     type: string;
-    width: number;
-    height: number;
-    publicId: string;
+    imageKey: string;
 }
 
 export interface ImageFileDto {

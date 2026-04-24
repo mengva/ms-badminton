@@ -54,7 +54,7 @@ export class DOMPurifyServices {
         }
         
         const keys: string[] = Object.keys(obj);
-        const imageFileKeys: string[] = ["fileName", "fileType", "fileData", "size"];
+        const imageFileKeys: string[] = ["fileName", "fileType", "fileData", "size", "width", "height"];
         const isValidImageFile = Boolean(keys && keys.length && imageFileKeys.every(key => imageFileKeys.includes(key)) && keys.length === imageFileKeys.length);
 
         if (isValidImageFile) {

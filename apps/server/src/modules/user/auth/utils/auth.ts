@@ -52,7 +52,7 @@ export class tRPCAuthServices {
             }
 
             // 4. Verify password with bcrypt
-            const match = await Helper.bcryptCompare(info.password, userInfo.credentials.passwordHash);
+            const match = await Helper.bcryptCompare(info.password, userInfo.credentials?.passwordHash);
             if (!match) {
                 throw new TRPCError({
                     code: "UNAUTHORIZED",
@@ -248,7 +248,6 @@ export class tRPCAuthServices {
         }
     }
 
-
     public static async generateCodeResetPassword(email: string) {
         try {
             // 2. Generate a 6-digit random code
@@ -325,7 +324,7 @@ export class tRPCAuthServices {
 
             // 2. Reset Password (Verify)
             const reset_token = ctx.getCookie("reset_token");
-            const emailFromRedis = await redis.get(`reset_session:${reset_token}`);
+            const emailFromRedis = await redis.get(`reset_session:${reset_token}`) as string || "unknown" || null;
 
             if (!emailFromRedis) {
                 throw new TRPCError({ code: "UNAUTHORIZED", message: "Session expired" });
@@ -348,7 +347,7 @@ export class tRPCAuthServices {
             const resetToken = ctx.getCookie("reset_token");
 
             // 3. Look up the associated email from Redis using the token
-            const email = await redis.get(`reset_session:${resetToken}`);
+            const email = await redis.get(`reset_session:${resetToken}`) as string || null;
 
             if (!email) {
                 throw new TRPCError({
@@ -358,7 +357,7 @@ export class tRPCAuthServices {
             }
 
             // 4. Verify the OTP (One-Time Password) from Redis
-            const storedCode = await redis.get(`reset_password:${email}`);
+            const storedCode = await redis.get(`reset_password:${email}`) as string || null;
 
             if (!storedCode || storedCode !== code) {
                 throw new TRPCError({

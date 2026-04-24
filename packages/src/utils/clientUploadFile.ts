@@ -27,7 +27,9 @@ export class ClientUploadFileServices {
                         fileData: e.target.result as string,
                         fileName: file.name,
                         fileType: file.type,
-                        size: file.size
+                        size: file.size,
+                        width: file.type.startsWith('image/') ? (file as any).width : undefined,
+                        height: file.type.startsWith('image/') ? (file as any).height : undefined,
                     } as FileDto)
                 } else {
                     reject("File read failed");
