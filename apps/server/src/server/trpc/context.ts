@@ -33,7 +33,7 @@ export const getUserAgent = (c: HonoContext) => {
 export const createdTRPCContext = async (c: HonoContext) => {
   const userAgent = getUserAgent(c);
   const ipAddress = getIPAddress(c);
-  
+
   return {
     req: c.req.raw,
     res: c.res,

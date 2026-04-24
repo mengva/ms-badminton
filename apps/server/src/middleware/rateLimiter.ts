@@ -2,6 +2,8 @@ import { RateLimiterMemory } from 'rate-limiter-flexible';
 import type { Context as HonoContext } from "hono"
 import { TRPCErrorServices } from '../utils';
 
+type ResquestHeaders = HonoContext['req']['raw']['headers'];
+
 export class RateLimiterMiddleware {
     public static authLimiter = new RateLimiterMemory({
         points: 5, // 5 attempts
@@ -55,8 +57,8 @@ export class RateLimiterMiddleware {
         }
     };
 
-    public static getUserAgent(reqHeader: HonoContext['req']['raw']['headers']) {
-        return reqHeader.get('User-Agent');
+    public static getUserAgent(reqHeader: ResquestHeaders): string {
+        return reqHeader.get('User-Agent') as string || 'Unknown';
     }
 
     public static rateLimitAPI = async (c: HonoContext) => {
