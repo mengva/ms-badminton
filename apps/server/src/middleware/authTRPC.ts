@@ -3,14 +3,14 @@ import { TRPCError } from "@trpc/server";
 import db from "../config/db";
 import { ErrorHandler } from "@/server/packages/utils/handleError";
 import { Helper } from "../utils";
+import { tokenName } from "@/server/packages/utils";
 
 export class tRPCUserAuthMiddleware {
     public static isUserAuth = t.middleware(async ({ ctx, next }) => {
         // Determine the token name based on the user's role (staff in this case)
-        const cookieName = Helper.getCookieName(ctx.userInfo.role);
 
         // 1. Get token from cookies
-        const token = ctx.getCookie(cookieName);
+        const token = ctx.getCookie(tokenName);
         const currentUA = ctx.userAgent; // Get current User-Agent from Request Headers
 
         if (!token) {
