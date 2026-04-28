@@ -9,7 +9,7 @@ export const users = pgTable("users", {
     fullName: varchar("full_name", { length: 150 }).notNull(),
     phoneNumber: varchar("phone_number", { length: 20 }).unique(),
     email: varchar("email", { length: 100 }).unique(),
-    role: userRoleEnum("role").notNull().default("customer"),
+    role: userRoleEnum("role").notNull().default("Customer"),
     isActive: boolean("is_active").default(true).notNull(),
     userAgent: varchar("user_agent", { length: 255 }),
     ipAddress: varchar("ip_address", { length: 50 }),
@@ -31,17 +31,19 @@ export const userCredentials = pgTable("user_credentials", {
 
 // ==================== 3. User Images ====================
 export const images = pgTable("images", {
-    userId: uuid("user_id").primaryKey().notNull().references(() => users.id, { onDelete: "cascade" }),
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     url: text("url").notNull(),
     imageKey: text("image_key").notNull(),
     width: integer("width"),
     height: integer("height"),
     size: integer("size"),
-    type: imageTypeEnum("type").default("profile").notNull(),
+    type: imageTypeEnum("type").default("Profile").notNull(),
     isPrimary: boolean("is_primary").default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (table) => [
     index("images_type_idx").on(table.type),
+    index("images_user_id_idx").on(table.userId),
     index("images_is_primary_idx").on(table.isPrimary),
 ]);

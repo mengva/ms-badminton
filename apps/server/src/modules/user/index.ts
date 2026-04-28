@@ -14,6 +14,7 @@ import {
     integer
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { check } from "drizzle-orm/gel-core";
 
 // ==================== Enums ====================
 export const courtStatusEnum = pgEnum("court_status", ["Available", "Maintenance", "Occupied"]);
@@ -168,6 +169,7 @@ export const checkIns = pgTable("check_ins", {
     id: uuid("id").defaultRandom().primaryKey(),
     bookingId: uuid("booking_id").notNull().unique().references(() => bookings.id, { onDelete: "cascade" }),
     staffId: uuid("staff_id").notNull().references(() => staffs.userId, { onDelete: "cascade" }),
+    customerId: uuid("customer_id").notNull().references(() => customers.userId, { onDelete: "cascade" }),
     checkinTime: timestamp("checkin_time", { withTimezone: true }).defaultNow().notNull(),
     notes: text("notes"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -175,6 +177,7 @@ export const checkIns = pgTable("check_ins", {
 }, (table) => [
     index("check_ins_booking_id_idx").on(table.bookingId),
     index("check_ins_staff_id_idx").on(table.staffId),
+    index("check_ins_customer_id_idx").on(table.customerId),
 ]);
 
 // ==================== 11. Check Outs ====================
@@ -182,7 +185,8 @@ export const checkOuts = pgTable("check_outs", {
     id: uuid("id").defaultRandom().primaryKey(),
     bookingId: uuid("booking_id").notNull().unique().references(() => bookings.id, { onDelete: "cascade" }),
     staffId: uuid("staff_id").notNull().references(() => staffs.userId, { onDelete: "cascade" }),
-    checkoutTime: timestamp("checkout_time", { withTimezone: true }).defaultNow().notNull(),
+    customerId: uuid("customer_id").notNull().references(() => customers.userId, { onDelete: "cascade" }),
+    checkOutTime: timestamp("checkout_time", { withTimezone: true }).defaultNow().notNull(),
     actualEndTime: time("actual_end_time"),
     extraHours: numeric("extra_hours", { precision: 5, scale: 2 }).default("0.00"),
     extraCharge: numeric("extra_charge", { precision: 10, scale: 2 }).default("0.00"),
@@ -192,6 +196,7 @@ export const checkOuts = pgTable("check_outs", {
 }, (table) => [
     index("check_outs_booking_id_idx").on(table.bookingId),
     index("check_outs_staff_id_idx").on(table.staffId),
+    index("check_outs_customer_id_idx").on(table.customerId),
 ]);
 
 // ==================== 12. Payments ====================
@@ -203,10 +208,10 @@ export const payments = pgTable("payments", {
     amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
     paymentType: paymentTypeEnum("payment_type").notNull(),
     paymentMethod: paymentMethodEnum("payment_method").notNull(),
+    paymentStatus: paymentStatusEnum("payment_status").default("Paid"),
     paymentDate: timestamp("payment_date", { withTimezone: true }).defaultNow().notNull(),
     notes: text("notes"),
     referenceNumber: varchar("reference_number", { length: 100 }),
-    status: paymentStatusEnum("status").default("Paid"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (table) => [
@@ -214,23 +219,6 @@ export const payments = pgTable("payments", {
     index("payments_customer_id_idx").on(table.customerId),
     index("payments_staff_id_idx").on(table.staffId),
     index("payments_date_idx").on(table.paymentDate),
-]);
-
-// ==================== 13. Invoices ====================
-export const invoices = pgTable("invoices", {
-    id: uuid("id").defaultRandom().primaryKey(),
-    bookingId: uuid("booking_id").unique().references(() => bookings.id, { onDelete: "cascade" }),
-    customerId: uuid("customer_id").notNull().references(() => customers.userId, { onDelete: "cascade" }),
-    staffId: uuid("staff_id").references(() => staffs.userId),
-    totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
-    paidAmount: numeric("paid_amount", { precision: 10, scale: 2 }).default("0.00"),
-    invoiceDate: timestamp("invoice_date", { withTimezone: true }).defaultNow().notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
-}, (table) => [
-    index("invoices_booking_id_idx").on(table.bookingId),
-    index("invoices_customer_id_idx").on(table.customerId),
-    index("invoices_staff_id_idx").on(table.staffId),
 ]);
 
 // ====================== RELATIONS ======================
@@ -254,6 +242,14 @@ export const usersRelations = relations(users, ({ one, many }) => ({
         references: [customers.userId],
     }),
     courts: many(courts),
+    checkInAsStaffs: many(checkIns),
+    checkOutAsStaffs: many(checkOuts),
+    checkInAsCustomers: many(checkIns),
+    checkOutAsCustomers: many(checkOuts),
+    paymentsAsStaffs: many(payments),
+    paymentsAsCustomers: many(payments),
+    bookingsAsCustomers: many(bookings),
+    bookingsAsStaffs: many(bookings),
 }));
 
 export const userCredentialsRelations = relations(userCredentials, ({ one }) => ({
@@ -280,29 +276,20 @@ export const courtOwnersRelations = relations(courtOwners, ({ one, many }) => ({
         fields: [courtOwners.userId],
         references: [users.id],
     }),
-    courts: many(courts),
 }));
 
-export const staffRelations = relations(staffs, ({ one, many }) => ({
+export const staffRelations = relations(staffs, ({ one }) => ({
     user: one(users, {
         fields: [staffs.userId],
         references: [users.id],
     }),
-    checkIns: many(checkIns),
-    checkOuts: many(checkOuts),
-    payments: many(payments),
-    invoices: many(invoices),
-    bookings: many(bookings),
 }));
 
-export const customersRelations = relations(customers, ({ one, many }) => ({
+export const customersRelations = relations(customers, ({ one }) => ({
     user: one(users, {
         fields: [customers.userId],
         references: [users.id],
     }),
-    bookings: many(bookings),
-    payments: many(payments),
-    invoices: many(invoices),
 }));
 
 // FIX #7: Tshem `one` import tawm — tsis siv
@@ -316,7 +303,7 @@ export const courtsRelations = relations(courts, ({ one, many }) => ({
         references: [users.id],
     }),
     images: many(images),
-    type: one(courtTypes, {
+    courtType: one(courtTypes, {
         fields: [courts.typeId],
         references: [courtTypes.id],
     }),
@@ -324,17 +311,17 @@ export const courtsRelations = relations(courts, ({ one, many }) => ({
 }));
 
 export const bookingsRelations = relations(bookings, ({ one, many }) => ({
-    customer: one(customers, {
+    customer: one(users, {
         fields: [bookings.customerId],
-        references: [customers.userId],
+        references: [users.id],
     }),
     court: one(courts, {
         fields: [bookings.courtId],
         references: [courts.id],
     }),
-    staff: one(staffs, {
+    staff: one(users, {
         fields: [bookings.staffId],
-        references: [staffs.userId],
+        references: [users.id],
     }),
     checkIn: one(checkIns, {
         fields: [bookings.id],
@@ -345,10 +332,6 @@ export const bookingsRelations = relations(bookings, ({ one, many }) => ({
         references: [checkOuts.bookingId],
     }),
     payments: many(payments),
-    invoice: one(invoices, {
-        fields: [bookings.id],
-        references: [invoices.bookingId],
-    }),
 }));
 
 // FIX #8: Added this fields/references in checkInsRelations
@@ -357,9 +340,13 @@ export const checkInsRelations = relations(checkIns, ({ one }) => ({
         fields: [checkIns.bookingId],
         references: [bookings.id],
     }),
-    staff: one(staffs, {
+    staff: one(users, {
         fields: [checkIns.staffId],
-        references: [staffs.userId],
+        references: [users.id],
+    }),
+    customer: one(users, {
+        fields: [checkIns.customerId],
+        references: [users.id],
     }),
 }));
 
@@ -369,9 +356,13 @@ export const checkOutsRelations = relations(checkOuts, ({ one }) => ({
         fields: [checkOuts.bookingId],
         references: [bookings.id],
     }),
-    staff: one(staffs, {
+    staff: one(users, {
         fields: [checkOuts.staffId],
-        references: [staffs.userId],
+        references: [users.id],
+    }),
+    customer: one(users, {
+        fields: [checkOuts.customerId],
+        references: [users.id],
     }),
 }));
 
@@ -381,28 +372,12 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
         fields: [payments.bookingId],
         references: [bookings.id],
     }),
-    customer: one(customers, {
+    customer: one(users, {
         fields: [payments.customerId],
-        references: [customers.userId],
+        references: [users.id],
     }),
-    staff: one(staffs, {
+    staff: one(users, {
         fields: [payments.staffId],
-        references: [staffs.userId],
-    }),
-}));
-
-// FIX #11: Added this fields/references in invoicesRelations
-export const invoicesRelations = relations(invoices, ({ one }) => ({
-    booking: one(bookings, {
-        fields: [invoices.bookingId],
-        references: [bookings.id],
-    }),
-    customer: one(customers, {
-        fields: [invoices.customerId],
-        references: [customers.userId],
-    }),
-    staff: one(staffs, {
-        fields: [invoices.staffId],
-        references: [staffs.userId],
+        references: [users.id],
     }),
 }));
