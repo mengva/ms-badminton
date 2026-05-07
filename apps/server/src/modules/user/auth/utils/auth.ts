@@ -332,6 +332,15 @@ export class tRPCAuthServices {
             // Note: Email is no longer required in the body for enhanced security.
             const { code, password }: ZodValidationServerResetPassword = ctx.bodyInfo;
 
+            const userId = ctx.userInfo?.userId || null;
+
+            if (!userId) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "User not authenticated"
+                });
+            }
+
             // 2. Retrieve the reset session from the secure cookie
             const resetToken = ctx.getCookie("reset_token");
 
@@ -357,15 +366,6 @@ export class tRPCAuthServices {
 
             // 5. Hash the new password before storing it
             const hashedPassword = await Helper.bcryptHash(password);
-
-            const userId = ctx.userInfo?.userId || null;
-
-            if (!userId) {
-                throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "User not authenticated"
-                });
-            }
 
             // 6. Update the user's password in the database
             await db.update(userCredentials)

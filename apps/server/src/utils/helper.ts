@@ -88,7 +88,7 @@ export class Helper {
         return hashed;
     }
 
-    public static async bcryptCompare(code: string, hashedCode: string) {
+    public static async bcryptCompare(code: string, hashedCode: string): Promise<boolean> {
         return await bcrypt.compare(code, hashedCode);
     }
 
