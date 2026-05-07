@@ -1,15 +1,20 @@
-import { Geist, Geist_Mono } from "next/font/google"
-
+import localFont from "next/font/local";
 import "@workspace/ui/globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@workspace/ui/lib/utils";
+import { Providers } from "@/components/providers"
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "react-hot-toast";
+import { TRPCProvider } from "./trpc";
+import { Metadata } from "next";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
+const customizeFont = localFont({
+  src: "../../../packages/src/fonts/Phetsarath_OT.ttf",
+  variable: "--Phetsarath_OT",
+});
 
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
+export const metadata: Metadata = {
+  title: "Web landing",
+  description: "Landing panel",
+};
 
 export default function RootLayout({
   children,
@@ -17,13 +22,27 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
-    >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={customizeFont.className}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          enableColorScheme
+        >
+          <div id="web" className="w-full h-screen fixed inset-0 overflow-y-auto">
+            <TRPCProvider>
+              <Providers>
+                <>
+                  {children}
+                  <Toaster position="bottom-right" />
+                </>
+              </Providers>
+            </TRPCProvider>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )
