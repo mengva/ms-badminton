@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1775542132597,
-      "tag": "0000_military_zeigeist",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1776918875069,
-      "tag": "0001_plain_midnight",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1776918949906,
-      "tag": "0002_nostalgic_wallflower",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1777021305378,
-      "tag": "0003_wise_wonder_man",
+      "when": 1778299843747,
+      "tag": "0000_foamy_retro_girl",
       "breakpoints": true
     }
   ]

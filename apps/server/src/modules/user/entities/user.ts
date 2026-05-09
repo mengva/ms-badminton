@@ -1,7 +1,6 @@
 
-import { boolean, index, integer, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
-import { imageTypeEnum, userRoleEnum } from "./enum";
-
+import { boolean, index, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { userRoleEnum } from "./enum";
 
 // ==================== 1. Users (Base Table) ====================
 export const users = pgTable("users", {
@@ -19,31 +18,4 @@ export const users = pgTable("users", {
     index("users_phone_idx").on(table.phoneNumber),
     index("users_email_idx").on(table.email),
     index("users_role_idx").on(table.role),
-]);
-
-// ==================== 2. User Credentials ====================
-export const userCredentials = pgTable("user_credentials", {
-    userId: uuid("user_id").primaryKey().notNull().unique().references(() => users.id, { onDelete: "cascade" }),
-    passwordHash: varchar("password_hash", { length: 255 }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
-});
-
-// ==================== 3. User Images ====================
-export const images = pgTable("images", {
-    id: uuid("id").defaultRandom().primaryKey(),
-    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-    url: text("url").notNull(),
-    imageKey: text("image_key").notNull(),
-    width: integer("width"),
-    height: integer("height"),
-    size: integer("size"),
-    type: imageTypeEnum("type").default("Profile").notNull(),
-    isPrimary: boolean("is_primary").default(false),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
-}, (table) => [
-    index("images_type_idx").on(table.type),
-    index("images_user_id_idx").on(table.userId),
-    index("images_is_primary_idx").on(table.isPrimary),
 ]);
