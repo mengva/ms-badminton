@@ -1,4 +1,3 @@
-import { users } from "@/server/db";
 import {
     pgTable,
     uuid,
@@ -8,6 +7,7 @@ import {
     index,
 } from "drizzle-orm/pg-core";
 import { membershipTypeEnum } from "./enum";
+import { users } from "@/server/modules/user/entities";
 
 export const customers = pgTable("customers", {
     userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),

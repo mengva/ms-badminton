@@ -1,4 +1,4 @@
-import { users } from "@/server/db";
+import { users } from "@/server/modules/user/entities";
 import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const staffs = pgTable("staffs", {
