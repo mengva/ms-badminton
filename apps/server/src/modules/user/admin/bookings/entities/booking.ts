@@ -8,8 +8,8 @@ import {
     time,
     numeric,
 } from "drizzle-orm/pg-core";
-import { courts } from "./court";
 import { bookingStatusEnum } from "./enum";
+import { courts } from "../../manage/court/entities";
 
 // ==================== 9. Bookings ====================
 export const bookings = pgTable("bookings", {

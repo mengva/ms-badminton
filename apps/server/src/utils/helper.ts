@@ -10,7 +10,6 @@ interface PayloadDto {
     userId: string;
     role: UserRoleDto;
     userAgent: string;
-    exp: number; // Expiration time in seconds since the epoch
 }
 
 export interface MailOptionsDto {
@@ -48,15 +47,15 @@ export class Helper {
         const secret = env("USER_SECRET");
         const expiresIn = env("ACCESS_TOKEN_EXPIRES_IN"); // Example: "1d" or "24h"
 
-        if (!secret) {
-            throw new Error("Secret key is not defined in environment variables");
+        if (!secret || !expiresIn) {
+            throw new Error("Secret key or expiration time is not defined in environment variables");
         }
 
         const signOptions: jwt.SignOptions = {
             algorithm: env("ALGORITHM") as jwt.Algorithm,
             // If your env is a string like "1d", remove parseInt. 
             // If it's a number of seconds, keep parseInt.
-            expiresIn: expiresIn as any
+            expiresIn: expiresIn as any, // jwt library can handle string formats like "1d", "24h" directly
         };
 
         return jwt.sign(payload, secret, signOptions);
@@ -88,7 +87,7 @@ export class Helper {
         return hashed;
     }
 
-    public static async bcryptCompare(code: string, hashedCode: string): Promise<boolean> {
+    public static async bcryptCompare(code: string, hashedCode: string) {
         return await bcrypt.compare(code, hashedCode);
     }
 

@@ -8,10 +8,10 @@ import {
     timestamp,
     index,
 } from "drizzle-orm/pg-core";
-import { bookings } from "../../manage/court/entities";
 import { users } from "../../../entities";
-import { invoices } from "./invoices";
 import { paymentMethodEnum, paymentStatusEnum, paymentTypeEnum } from "./enum";
+import { invoices } from "../../invoices/entities";
+import { bookings } from "../../bookings/entities";
 
 // ==================== 12. Payments ====================
 export const payments = pgTable("payments", {

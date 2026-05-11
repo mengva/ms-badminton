@@ -1,12 +1,21 @@
 import { zodValidationSignUp } from "@/server/packages/validations";
 import db from "../config/db";
-import { userCredentials, users } from "../db";
+import { courtOwners, userCredentials, users } from "../db";
 import { Helper } from "../utils";
 import { ErrorHandler } from "@/server/packages/utils";
+import { Context as HonoContext } from "hono";
+import { getUserAgent } from "../server/trpc/context";
 
-export const generateUser = async () => {
+export const generateUser = async (c: HonoContext) => {
     try {
         const email = "msBadminton@gmail.com";
+
+        const userAgent = getUserAgent(c) || '';
+
+        if (!userAgent) {
+            console.log("User agent is missing in the request.");
+            return;
+        }
 
         const userInfo = await db.query.users.findFirst({
             where: (users, { eq, and }) => and(
@@ -44,7 +53,8 @@ export const generateUser = async () => {
                 fullName: validationUserInfo.fullName,
                 email: validationUserInfo.email,
                 phoneNumber: validationUserInfo.phoneNumber,
-                role: "owner",
+                role: "Owner",
+                userAgent: userAgent,
             }).returning({
                 id: users.id,
             });
@@ -61,6 +71,12 @@ export const generateUser = async () => {
                 passwordHash: hashedPassword,
             });
 
+            await tx.insert(courtOwners).values({
+                userId: newUserId,
+                companyName: "MS Badminton",
+                address: "123 Main Street, City, Country",
+            });
+
             console.log("User generated successfully.");
 
         }));
@@ -71,6 +87,6 @@ export const generateUser = async () => {
 
         // logic to auto signup users
     } catch (error) {
-        console.error("Error occurred while generating user:", error);
+        console.log("Error occurred while generating user:", error);
     }
 }

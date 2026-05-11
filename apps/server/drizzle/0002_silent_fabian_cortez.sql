@@ -1,0 +1,1 @@
+ALTER TABLE "check_outs" DROP CONSTRAINT "check_outs_booking_id_unique";

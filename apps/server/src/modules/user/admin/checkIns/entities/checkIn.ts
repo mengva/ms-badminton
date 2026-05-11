@@ -5,8 +5,8 @@ import {
     timestamp,
     index,
 } from "drizzle-orm/pg-core";
-import { bookings } from ".";
 import { users } from "@/server/modules/user/entities";
+import { bookings } from "../../bookings/entities";
 
 // ==================== 10. Check Ins ====================
 export const checkIns = pgTable("check_ins", {

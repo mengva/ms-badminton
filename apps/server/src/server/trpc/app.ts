@@ -26,14 +26,14 @@ header.setupSecurityHeaders(app);
 app.use('/trpc/*', trpcServer({
     router: appRouter,
     createContext: async (req, c) => {
-        const context = await createdTRPCContext(c as unknown as HonoContext);
-        return typeof context === 'object' ? context : {};
+        const context = await createdTRPCContext(c as HonoContext);
+        return context;
     },
-}) as unknown as MiddlewareHandler);
+}));
 
 // Test route
 app.get('/generate-user', async (c) => {
-    await generateUser();
+    await generateUser(c);
     return c.json({
         message: "Hello Hono + trpc",
     });

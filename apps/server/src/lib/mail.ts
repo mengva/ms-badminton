@@ -1,5 +1,8 @@
+import * as dotenv from "dotenv";
 import { Resend } from 'resend';
 import { env } from '../config/env';
+
+dotenv.config(); // Load environment variables from .env file
 
 // 1. Initialize Resend with your API Key
 const resend = new Resend(env("RESEND_API_KEY"));
@@ -10,7 +13,7 @@ export class MailServices {
     public static async sendResetCodeEmail(email: string, code: string) {
         try {
             const { data, error } = await resend.emails.send({
-                from: 'M.S Badminton <onboarding@resend.dev>', // Default testing email
+                from: 'M.S Badminton <noreply@mail.msbadminton.com>', // Default testing email
                 to: email,
                 subject: 'Verification Code: Reset Your Password',
                 html: `
@@ -30,6 +33,8 @@ export class MailServices {
             `,
             });
 
+            console.log("Email send response:", { data, error });
+
             if (error) {
                 return { success: false, error };
             }
@@ -43,7 +48,7 @@ export class MailServices {
     public static async sendResetCodeEmailSignIn(email: string, code: string) {
         try {
             const { data, error } = await resend.emails.send({
-                from: 'M.S Badminton <onboarding@resend.dev>', // Default testing email
+                from: 'M.S Badminton <noreply@mail.msbadminton.com>', // Default testing email
                 to: email,
                 subject: 'Verification Code: Sign In to Your Account',
                 html: `

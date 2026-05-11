@@ -12,7 +12,6 @@ export class SecureEnv {
         'SESSION_SECRET',
         'CORS_ORIGIN',
         'NODE_ENV',
-        "REDIS_PORT",
         "UPSTASH_REDIS_REST_URL",
         "UPSTASH_REDIS_REST_TOKEN",
         "RESEND_API_KEY",

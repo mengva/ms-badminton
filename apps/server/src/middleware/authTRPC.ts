@@ -1,11 +1,42 @@
 import { t } from "../server/trpc/procedures";
 import { TRPCError } from "@trpc/server";
 import db from "../config/db";
-import { ErrorHandler } from "@/server/packages/utils/handleError";
-import { Helper } from "../utils";
+import { Helper, TRPCErrorServices } from "../utils";
 import { tokenName } from "@/server/packages/utils";
 
 export class tRPCUserAuthMiddleware {
+
+    public static isUserAlreadyAuth = t.middleware(async ({ ctx, next }) => {
+        const token = ctx.getCookie(tokenName);
+
+        if (token) {
+            try {
+                // Verify JWT and extract payload
+                const payload = await Helper.verifyTokenSecret(token);
+                // Security Check: Compare Token's User-Agent with Current Request's User-Agent
+                if (payload) {
+                    throw new TRPCError({
+                        code: "BAD_REQUEST",
+                        message: "You are already authenticated. Please sign out before trying to sign in again.",
+                    });
+                } else {
+                    // If token is invalid or expired, we can ignore the error and allow the user to proceed with authentication since it means the token is not valid for authentication.
+                    // This is a security measure to prevent users from trying to authenticate again while they already have a valid session, which could indicate a potential misuse or attack.
+                    throw new TRPCError({
+                        code: "UNAUTHORIZED",
+                        message: "Invalid or expired authentication token. Please sign in again.",
+                    });
+                }
+            } catch (error) {
+                throw TRPCErrorServices.TRPCError(error);
+                // If token verification fails, we can ignore the error and allow the user to proceed with authentication
+                // since it means the token is invalid or expired.
+            }
+        }
+
+        return await next();
+    });
+
     public static isUserAuth = t.middleware(async ({ ctx, next }) => {
         // Determine the token name based on the user's role (staff in this case)
 
@@ -48,20 +79,18 @@ export class tRPCUserAuthMiddleware {
                 });
             }
 
+            ctx.userInfo = {
+                userId: payload.userId,
+                role: payload.role,
+            }; // Attach user info to context for downstream procedures
+
+            ctx.userAgent = payload.userAgent; // Attach user agent to context for potential future use (e.g., logging, analytics)
+
             // 5. Pass user data to the next procedure context
-            return next({
-                ctx: {
-                    ...ctx,
-                    userInfo: {
-                        id: payload.userId,
-                        role: payload.role,
-                    },
-                    userAgent: payload.userAgent, // Pass the user agent to the context for future checks
-                },
-            });
+            return await next();
 
         } catch (error) {
-            throw ErrorHandler.getErrorMessage(error);
+            throw TRPCErrorServices.TRPCError(error);
         }
     });
 

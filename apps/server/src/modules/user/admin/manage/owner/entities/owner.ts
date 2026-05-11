@@ -4,7 +4,7 @@ import { index, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-c
 export const courtOwners = pgTable("court_owners", {
     userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
     companyName: varchar("company_name", { length: 150 }),
-    address: text("address"),
+    address: text("address").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
 }, (table) => [
