@@ -1,21 +1,20 @@
 import { TRPCError } from "@trpc/server";
-import { ErrorHandler } from "@/server/packages/utils/handleError";
 import { ZodValidationSendOTPToEmail, ZodValidationServerResetPassword, ZodValidationSignIn, ZodValidationSignInOTP } from "@/server/packages/validations";
 import { MyContext } from "@/server/server/trpc/context";
 import { eq } from "drizzle-orm";
 import { redis } from "@/server/lib/redis";
 import { MailServices } from "@/server/lib/mail";
 import { ServerResponseDto, UserRoleDto } from "@/server/packages/types";
-import { HandlerSuccess, Helper } from "@/server/utils";
+import { HandlerSuccess, Helper, TRPCErrorServices } from "@/server/utils";
 import { userCredentials, users } from "../../entities";
 import db from "@/server/config/db";
 import { tokenName } from "@/server/packages/utils";
 
 export class tRPCAuthServices {
 
-    public static async signIn(ctx: MyContext): Promise<ServerResponseDto | void> {
+    public static async signIn(ctx: MyContext): Promise<ServerResponseDto> {
         try {
-            const info = ctx.bodyInfo as ZodValidationSignIn;
+            const info: ZodValidationSignIn = ctx.bodyInfo;
             const userAgent = ctx.userAgent || null;
 
             // 1. Validate if user agent exists
@@ -69,7 +68,6 @@ export class tRPCAuthServices {
                 userId: userInfo.id,
                 role: userInfo.role as UserRoleDto,
                 userAgent: userAgent,
-                exp: Helper.tokenExpriresIn, // Token expires in 30 days
             };
 
             // 7. Generate and set access token in cookies
@@ -79,11 +77,11 @@ export class tRPCAuthServices {
 
             return HandlerSuccess.success("Sign in successful");
         } catch (error) {
-            throw ErrorHandler.getErrorMessage(error);
+            throw TRPCErrorServices.TRPCError(error);
         }
     }
 
-    public static async sendCodeSignInOTP(ctx: MyContext): Promise<ServerResponseDto | void> {
+    public static async sendCodeSignInOTP(ctx: MyContext) {
         try {
             const { email }: ZodValidationSendOTPToEmail = ctx.bodyInfo;
 
@@ -131,11 +129,11 @@ export class tRPCAuthServices {
             });
 
         } catch (error) {
-            throw ErrorHandler.getErrorMessage(error);
+            throw TRPCErrorServices.TRPCError(error);
         }
     }
 
-    public static async resendCodeSignInOTP(ctx: MyContext): Promise<ServerResponseDto | void> {
+    public static async resendCodeSignInOTP(ctx: MyContext) {
         try {
             const tokenFromCookie = ctx.getCookie("reset_token_sign_in");
             const emailFromRedis = await redis.get(`reset_email_sign_in:${tokenFromCookie}`); // Get email associated with the OTP code
@@ -157,13 +155,13 @@ export class tRPCAuthServices {
 
             return HandlerSuccess.success("Reset code sent to your email successfully");
         } catch (error) {
-            throw ErrorHandler.getErrorMessage(error);
+            throw TRPCErrorServices.TRPCError(error);
         }
     }
 
-    public static async signInOTP(ctx: MyContext): Promise<ServerResponseDto | void> {
+    public static async signInOTP(ctx: MyContext): Promise<ServerResponseDto> {
         try {
-            const info = ctx.bodyInfo as ZodValidationSignInOTP;
+            const info: ZodValidationSignInOTP = ctx.bodyInfo;
             const userAgent = ctx.userAgent || null;
 
             const tokenFromCookie = ctx.getCookie("reset_token_sign_in");
@@ -218,7 +216,6 @@ export class tRPCAuthServices {
                 userId: userInfo.id,
                 role: userInfo.role as UserRoleDto,
                 userAgent: userAgent,
-                exp: Helper.tokenExpriresIn, // Token expires in 30 days
             };
 
             // 7. Generate and set access token in cookies
@@ -233,11 +230,11 @@ export class tRPCAuthServices {
             return HandlerSuccess.success("OTP Sign in successful");
 
         } catch (error) {
-            throw ErrorHandler.getErrorMessage(error);
+            throw TRPCErrorServices.TRPCError(error);
         }
     }
 
-    public static async generateCodeResetPassword(email: string): Promise<ServerResponseDto | void> {
+    public static async generateCodeResetPassword(email: string) {
         try {
             // 2. Generate a 6-digit random code
             const resetCode = Helper.generateOTP(); // e.g., "123456"
@@ -261,12 +258,12 @@ export class tRPCAuthServices {
             });
 
         } catch (error) {
-            throw ErrorHandler.getErrorMessage(error);
+            throw TRPCErrorServices.TRPCError(error);
         }
     }
 
     // using to send OTP code to email for sign in and reset password, so no need to check user agent and role here
-    public static async sendCodeResetPassword(ctx: MyContext): Promise<ServerResponseDto | void> {
+    public static async sendCodeResetPassword(ctx: MyContext) {
         try {
             const { email }: ZodValidationSendOTPToEmail = ctx.bodyInfo;
 
@@ -303,11 +300,11 @@ export class tRPCAuthServices {
             });
 
         } catch (error) {
-            throw ErrorHandler.getErrorMessage(error);
+            throw TRPCErrorServices.TRPCError(error);
         }
     }
 
-    public static async resendCode(ctx: MyContext): Promise<ServerResponseDto | void> {
+    public static async resendCode(ctx: MyContext) {
         try {
             // 1.  Forgot Password (send OTP)
 
@@ -322,11 +319,11 @@ export class tRPCAuthServices {
             return await this.generateCodeResetPassword(emailFromRedis as string);
 
         } catch (error) {
-            throw ErrorHandler.getErrorMessage(error);
+            throw TRPCErrorServices.TRPCError(error);
         }
     }
 
-    public static async resetPassword(ctx: MyContext): Promise<ServerResponseDto | void> {
+    public static async resetPassword(ctx: MyContext) {
         try {
             // 1. Extract validation data from request body
             // Note: Email is no longer required in the body for enhanced security.
@@ -382,7 +379,7 @@ export class tRPCAuthServices {
             return HandlerSuccess.success("Password has been reset successfully.");
 
         } catch (error) {
-            throw ErrorHandler.getErrorMessage(error);
+            throw TRPCErrorServices.TRPCError(error);
         }
     }
 }

@@ -7,9 +7,9 @@ import {
     timestamp,
     index,
 } from "drizzle-orm/pg-core";
-import { bookings } from "../../manage/court/entities";
 import { users } from "../../../entities";
 import { invoiceStatusEnum } from "./enum";
+import { bookings } from "../../bookings/entities";
 
 // ==================== 13. Invoices ====================
 export const invoices = pgTable("invoices", {

@@ -10,7 +10,7 @@ export const users = pgTable("users", {
     email: varchar("email", { length: 100 }).unique(),
     role: userRoleEnum("role").notNull().default("Customer"),
     isActive: boolean("is_active").default(true).notNull(),
-    userAgent: varchar("user_agent", { length: 255 }),
+    userAgent: varchar("user_agent", { length: 255 }).notNull(),
     ipAddress: varchar("ip_address", { length: 50 }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),

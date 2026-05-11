@@ -2,11 +2,13 @@
 import { boolean, index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { imageTypeEnum } from "./enum";
 import { users } from "./user";
+import { courts } from "../../../modules/user/admin/manage/court/entities";
 
 // ==================== 3. User Images ====================
 export const images = pgTable("images", {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    courtId: uuid("court_id").references(() => courts.id, { onDelete: "cascade" }),
     url: text("url").notNull(),
     imageKey: text("image_key").notNull(),
     width: integer("width"),

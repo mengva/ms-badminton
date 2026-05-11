@@ -1,4 +1,3 @@
-
 import { tRPCUserAuthRouter } from "@/server/modules/user/auth/routes/trpc";
 import { router } from "./procedures";
 
@@ -8,7 +7,7 @@ export const appRouter = router({
             auth: tRPCUserAuthRouter,
             admin: router({
                 dashboard: router({}),
-                manage: router({
+                master_data: router({
                     customer: router({}),
                     staff: router({}),
                     owner: router({}),

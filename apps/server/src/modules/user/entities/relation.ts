@@ -5,8 +5,12 @@ import { images } from "./image";
 import { courtOwners } from "../admin/manage/owner/entities";
 import { staffs } from "../admin/manage/staff/entities";
 import { customers } from "../admin/manage/customer/entities";
-import { bookings, checkIns, checkOuts, courts } from "../admin/manage/court/entities";
-import { invoices, payments } from "../admin/payment/entities";
+import { courts } from "../admin/manage/court/entities";
+import { payments } from "../admin/payment/entities";
+import { invoices } from "../admin/invoices/entities/invoices";
+import { checkIns } from "../admin/checkIns/entities";
+import { checkOuts } from "../admin/checkOuts/entities";
+import { bookings } from "../admin/bookings/entities";
 
 export const usersRelations = relations(users, ({ one, many }) => ({
     credentials: one(userCredentials, {
@@ -51,5 +55,9 @@ export const imagesRelations = relations(images, ({ one }) => ({
     user: one(users, {
         fields: [images.userId],
         references: [users.id],
+    }),
+    court: one(courts, {
+        fields: [images.courtId],
+        references: [courts.id],
     }),
 }));
