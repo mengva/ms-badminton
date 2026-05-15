@@ -22,8 +22,8 @@ export default function SignInPage() {
     const form = useForm<ZodValidationSignIn>({
         resolver: zodResolver(zodValidationSignIn),
         defaultValues: {
-            email: "",
-            password: "",
+            email: "msBadminton@gmail.com",
+            password: "msBadminton09@&.com",
         },
     });
 

@@ -33,6 +33,7 @@ import {
 } from "react-icons/tb";
 
 import { IconType } from "react-icons";
+import { LucideLayoutDashboard } from "lucide-react";
 
 // -------------------- Types --------------------
 export type NavChild = {
@@ -55,7 +56,7 @@ export const navigations: NavItem[] = [
     {
         name: "ແຜງຄວບຄຸມ",
         href: "/admin/dashboard",
-        icon: MdPeopleAlt,
+        icon: LucideLayoutDashboard ,
         isActive: false,
         children: [],
     },

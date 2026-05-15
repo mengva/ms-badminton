@@ -2,6 +2,9 @@ import * as bcrypt from "bcryptjs"
 import { env } from "../config/env";
 import * as jwt from "jsonwebtoken";
 import { UserRoleDto } from "@/server/packages/types/constants/variables";
+import * as nodemailer from "nodemailer";
+import { MailOptionDto } from "../types/auth";
+
 // import {jwt, decode, sign, verify} from "hono/jwt"
 
 export type SignDto = "HS256" | "HS384" | "HS512" | "RS256" | "RS384" | "RS512" | "ES256" | "ES384" | "ES512" | "PS256" | "PS384" | "PS512";
@@ -113,5 +116,25 @@ export class Helper {
 
     public static setCurrentDate(day: number) {
         return new Date(Date.now() + day);
+    }
+
+    public static transporter() {
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: env('EMAIL_ADDRESS'),
+                pass: env('EMAIL_PASSWORD'),
+            },
+        });
+        return transporter;
+    }
+
+    public static mailOptions({ from, to, subject, html }: MailOptionDto) {
+        return {
+            from,
+            to,
+            subject,
+            html
+        }
     }
 }

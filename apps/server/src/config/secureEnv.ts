@@ -15,8 +15,15 @@ export class SecureEnv {
         "UPSTASH_REDIS_REST_URL",
         "UPSTASH_REDIS_REST_TOKEN",
         "RESEND_API_KEY",
+        'EMAIL_ADDRESS',
+        'EMAIL_PASSWORD',
         "UPLOADTHING_SECRET",
         "UPLOADTHING_APP_ID",
+        'CLOUDINARY_NAME',
+        'CLOUDINARY_SECRET',
+        'CLOUDINARY_API_KEY',
+        'CLOUDINARY_SECRET',
+        'CLOUDINARY_URL',
     ] as const;
 
     public static validate() {

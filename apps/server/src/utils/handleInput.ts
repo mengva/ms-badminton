@@ -1,8 +1,8 @@
 import { DomAndSanitizeServices } from "@/server/packages/utils/domAndSanitize";
 import { MyContext } from "../server/trpc/context";
 import { ServerResponseDto } from "@/server/packages/types/constants/interface";
-import { TRPCErrorServices } from "./handleTRPCError";
 import { TRPCError } from "@trpc/server";
+import { tRPCErrorServices } from "./handleTRPCError";
 
 interface InputDto {
     ctx: MyContext;
@@ -22,6 +22,6 @@ export const handleSanitizeInputValue = async ({ ctx, input }: InputDto, callbac
         }
         return await callback(ctx);
     } catch (error) {
-        throw TRPCErrorServices.TRPCError(error);
+        throw tRPCErrorServices.tRPCError(error);
     }
 }

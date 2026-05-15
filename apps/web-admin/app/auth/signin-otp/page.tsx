@@ -14,17 +14,20 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { Clock } from 'lucide-react';
 import { ServerResponseDto } from '@/admin/packages/types/constants';
-import { zodValidationSendOTPToEmail, ZodValidationSendOTPToEmail, ZodValidationSignInOTP } from '@/admin/packages/validations/auth';
-import { zodValidationEmail } from '@/admin/packages/validations';
+import { ZodValidationSignInOTP } from '@/admin/packages/validations/auth';
+import { zodValidationEmail, zodValidationOTPCodeSignIn } from '@/admin/packages/validations';
 import Image from 'next/image';
 import MSBadmintionLogo from "../../../public/images/MS.badmintion_logo1.png";
 import { Badge } from '@workspace/ui/components/badge';
 
-export default function SignInWithOTPFormPage() {
+// msBadminton@gmail.com
+
+export default function SignInWithCodeFormPage() {
   const [step, setStep] = useState<"email" | "otp">("email");
   const [email, setEmail] = useState("");
   const router = useRouter();
-  const [timeLeft, setTimeLeft] = useState(30); // 30 seconds
+  const codeExprired = 60;
+  const [timeLeft, setTimeLeft] = useState(codeExprired); // 1 minutes
   const [isExpired, setIsExpired] = useState(false);
 
   const emailForm = useForm<{ email: string }>({
@@ -32,17 +35,17 @@ export default function SignInWithOTPFormPage() {
     defaultValues: { email: "" },
   });
 
-  const signInWithOTPMutation = useForm<ZodValidationSendOTPToEmail>({
-    resolver: zodResolver(zodValidationSendOTPToEmail),
-    defaultValues: { email: "" },
+  const codeForm = useForm<{ code: string }>({
+    resolver: zodResolver(z.object({ code: zodValidationOTPCodeSignIn })),
+    defaultValues: { code: "" },
   });
 
-  const verifiedByEmailMutation = trpc.app.user.auth.sendCodeSignInOTP.useMutation({
+  const sendCodeSignInOTPMutation = trpc.app.user.auth.sendCodeSignInOTP.useMutation({
     onSuccess: (data: ServerResponseDto) => {
       if (data && data.success) {
-        signInWithOTPMutation.setValue("email", email);
+        emailForm.setValue("email", email);
         setStep("otp");
-        setTimeLeft(30);
+        setTimeLeft(codeExprired);
         setIsExpired(false);
         toast.success(data.message);
       }
@@ -67,7 +70,8 @@ export default function SignInWithOTPFormPage() {
   const resendCodeMutation = trpc.app.user.auth.resendCodeSignInOTP.useMutation({
     onSuccess: (data: ServerResponseDto) => {
       if (data && data.success) {
-        setTimeLeft(30);
+        setTimeLeft(codeExprired);
+        setStep("otp");
         setIsExpired(false);
         toast.success(data.message);
       }
@@ -79,21 +83,20 @@ export default function SignInWithOTPFormPage() {
 
   const sendOTP = (values: { email: string }) => {
     if (values && values.email) {
-      verifiedByEmailMutation.mutate({ email: values.email });
+      sendCodeSignInOTPMutation.mutate({ email: values.email });
       setEmail(values.email);
     } else toast.error("Request failed, Please try again later");
   };
 
-  const verifyOTP = (values: ZodValidationSignInOTP) => {
-    if (values) {
-      signInOTPMutation.mutate(values);
-    }
+  const signInOTP = (values: ZodValidationSignInOTP) => {
+    signInOTPMutation.mutate({ code: values.code });
   };
 
   useEffect(() => {
     if (step !== 'otp') return;
 
     if (timeLeft === 0) {
+      setStep("email");
       setIsExpired(true);
       toast.error('OTP has expired. Please request a new one.');
       return;
@@ -134,22 +137,22 @@ export default function SignInWithOTPFormPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full cursor-pointer" disabled={verifiedByEmailMutation.isPending}>
-                    {verifiedByEmailMutation.isPending ? "ກຳລັງສົ່ງ OTP..." : "ສົ່ງ OTP"}
+                  <Button type="submit" className="w-full cursor-pointer" disabled={sendCodeSignInOTPMutation.isPending}>
+                    {sendCodeSignInOTPMutation.isPending ? "ກຳລັງສົ່ງ OTP..." : "ສົ່ງ OTP"}
                   </Button>
                 </form>
               </Form>
             ) : (
-              <Form {...signInOTPMutation}>
-                <form onSubmit={signInOTPMutation.handleSubmit(verifyOTP)} className="space-y-4">
+              <Form {...codeForm}>
+                <form onSubmit={codeForm.handleSubmit(signInOTP)} className="space-y-4">
                   <FormField
-                    control={signInOTPMutation.control}
+                    control={codeForm.control}
                     name="code"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>ໃສ່ລະຫັດ OTP</FormLabel>
                         <FormControl>
-                          <Input disabled={isExpired} placeholder="12345678" maxLength={8} {...field} />
+                          <Input placeholder="12345678" maxLength={8} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -185,9 +188,12 @@ export default function SignInWithOTPFormPage() {
                     )
                   }
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={() => setStep("email")} className="flex-1 cursor-pointer">
-                      ກັບ
-                    </Button>
+                    {
+                      step !== "otp" &&
+                      <Button type="button" variant="outline" onClick={() => setStep("email")} className="flex-1 cursor-pointer">
+                        ກັບ
+                      </Button>
+                    }
                     <Button type="submit" className="flex-1 cursor-pointer" disabled={signInOTPMutation.isPending || isExpired}>
                       {signInOTPMutation.isPending ? "ກຳລັງກວດສອບ..." : "ກວດສອບ"}
                     </Button>
@@ -196,8 +202,11 @@ export default function SignInWithOTPFormPage() {
               </Form>
             )}
             <div className="mt-4 flex justify-between items-center text-sm">
-              <Badge variant="destructive" className='cursor-pointer' onClick={() => resendCodeMutation.mutate()}>
-                ສົ່ງລະຫັດຄືນໃໝ່?
+              <Badge variant="destructive" className='cursor-pointer' aria-disabled={resendCodeMutation.isPending} onClick={() => resendCodeMutation.isPending ? null : resendCodeMutation.mutate()}>
+                {
+                  !resendCodeMutation.isPending ?
+                    "ສົ່ງລະຫັດຄືນໃໝ່?" : "ກຳລັງສົ່ງລະຫັດຄືນໃໝ່..."
+                }
               </Badge>
               <Link href="/auth/signin">
                 <Badge variant="default">ກັບໄປເຂົ້າສູ່ລະບົບ?</Badge>

@@ -8,7 +8,7 @@ export class ErrorHandler {
 
     if (error instanceof TRPCClientError) {
       // TRPC errors can have nested data with additional context
-      message = this.handleTRPCError(error);
+      message = this.handletRPCError(error);
     } else if (error instanceof ZodError) {
       // Format validation errors in a user-friendly way
       message = this.handleZodError(error);
@@ -33,7 +33,7 @@ export class ErrorHandler {
     return message;
   }
 
-  private static handleTRPCError(error: TRPCClientError<any>): string {
+  private static handletRPCError(error: TRPCClientError<any>): string {
     // TRPC errors often contain more detailed information in the data property
     if (error.data?.zodError) {
       // Handle validation errors that come from TRPC
@@ -108,7 +108,7 @@ export class ErrorHandler {
   // Alternative method for getting error message without showing toast
   public static getErrorMessage(error: unknown): string {
     if (error instanceof TRPCClientError) {
-      return this.handleTRPCError(error);
+      return this.handletRPCError(error);
     } else if (error instanceof ZodError) {
       return this.handleZodError(error);
     } else if (error instanceof Error) {
