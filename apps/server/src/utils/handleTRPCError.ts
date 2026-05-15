@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorHandler } from "@/server/packages/utils/handleError";
 import { ServerErrorDto, TRPCCodeError } from "@/server/packages/types/constants/variables";
 
-export class TRPCErrorServices {
+export class tRPCErrorServices {
     public static message(message: string, code: TRPCCodeError) {
         throw new TRPCError({
             code,
@@ -10,7 +10,7 @@ export class TRPCErrorServices {
         });
     }
 
-    public static TRPCError(error: ServerErrorDto) {
+    public static tRPCError(error: ServerErrorDto) {
         const message = ErrorHandler.getErrorMessage(error);
         if (error instanceof TRPCError) {
             let code = error.code as TRPCCodeError;

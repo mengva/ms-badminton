@@ -5,10 +5,17 @@ import { eq } from "drizzle-orm";
 import { redis } from "@/server/lib/redis";
 import { MailServices } from "@/server/lib/mail";
 import { ServerResponseDto, UserRoleDto } from "@/server/packages/types";
-import { HandlerSuccess, Helper, TRPCErrorServices } from "@/server/utils";
+import { HandlerSuccess, Helper, tRPCErrorServices } from "@/server/utils";
 import { userCredentials, users } from "../../entities";
 import db from "@/server/config/db";
 import { tokenName } from "@/server/packages/utils";
+
+interface MailOptionDto {
+    from: string;
+    to: string;
+    subject: string;
+    html: string;
+}
 
 export class tRPCAuthServices {
 
@@ -77,7 +84,7 @@ export class tRPCAuthServices {
 
             return HandlerSuccess.success("Sign in successful");
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -109,6 +116,7 @@ export class tRPCAuthServices {
                 // Key format: "reset_password:email@example.com"
                 const resetToken = crypto.randomUUID(); // raomdom token for reset password session
                 await redis.set(`reset_email_sign_in:${resetToken}`, email, { ex: 300 }); // get email in token
+                await redis.set(`sign_in_otp:${email}`, otpCode, { ex: 60 }) // get otp code
 
                 ctx.setCookie("reset_token_sign_in", resetToken, {
                     httpOnly: true,
@@ -117,19 +125,23 @@ export class tRPCAuthServices {
                 });
 
                 // 4. SEND THE EMAIL using our new Helper
-                const emailSent = await MailServices.sendResetCodeEmailSignIn(email, otpCode);
+                const emailSent = MailServices.sendResetCodeEmailSignIn(email, otpCode) as MailOptionDto;
 
-                if (!emailSent.success) {
+                if (!emailSent) {
                     throw new TRPCError({
                         code: "INTERNAL_SERVER_ERROR",
                         message: "Failed to send email. Please try again later."
                     });
                 }
+
+                const transporter = Helper.transporter();
+                await transporter.sendMail(emailSent);
+
                 return HandlerSuccess.success("Reset code sent to your email successfully");
             });
 
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -144,18 +156,21 @@ export class tRPCAuthServices {
 
             const otpCode = Helper.generateOTP(); // e.g., "123456"
 
-            const emailSent = await MailServices.sendResetCodeEmailSignIn(emailFromRedis as string, otpCode);
+            const emailSent = MailServices.sendResetCodeEmailSignIn(emailFromRedis as string, otpCode) as MailOptionDto;
 
-            if (!emailSent.success) {
+            if (!emailSent) {
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "Failed to send email. Please try again later."
                 });
             }
 
+            const transporter = Helper.transporter();
+            await transporter.sendMail(emailSent);
+
             return HandlerSuccess.success("Reset code sent to your email successfully");
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -230,7 +245,7 @@ export class tRPCAuthServices {
             return HandlerSuccess.success("OTP Sign in successful");
 
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -243,22 +258,26 @@ export class tRPCAuthServices {
 
                 // 3. Store in Redis with an expiration (e.g., 5 minutes / 300 seconds)
                 // Key format: "reset_password:email@example.com"
-                await redis.set(`reset_password:${email}`, resetCode, { ex: 300 });
+                await redis.set(`reset_password:${email}`, resetCode, { ex: 60 });
 
                 // 4. SEND THE EMAIL using our new Helper
-                const emailSent = await MailServices.sendResetCodeEmail(email, resetCode);
+                const emailSent = MailServices.sendResetCodeEmail(email, resetCode) as MailOptionDto;
 
-                if (!emailSent.success) {
+                if (!emailSent) {
                     throw new TRPCError({
                         code: "INTERNAL_SERVER_ERROR",
                         message: "Failed to send email. Please try again later."
                     });
                 }
+
+                const transporter = Helper.transporter();
+                await transporter.sendMail(emailSent);
+
                 return HandlerSuccess.success("Reset code sent to your email");
             });
 
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -300,7 +319,7 @@ export class tRPCAuthServices {
             });
 
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -319,7 +338,7 @@ export class tRPCAuthServices {
             return await this.generateCodeResetPassword(emailFromRedis as string);
 
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -328,15 +347,6 @@ export class tRPCAuthServices {
             // 1. Extract validation data from request body
             // Note: Email is no longer required in the body for enhanced security.
             const { code, password }: ZodValidationServerResetPassword = ctx.bodyInfo;
-
-            const userId = ctx.userInfo?.userId || null;
-
-            if (!userId) {
-                throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "User not authenticated"
-                });
-            }
 
             // 2. Retrieve the reset session from the secure cookie
             const resetToken = ctx.getCookie("reset_token");
@@ -348,6 +358,20 @@ export class tRPCAuthServices {
                 throw new TRPCError({
                     code: "UNAUTHORIZED",
                     message: "Reset session has expired. Please restart the process."
+                });
+            }
+
+            const userInfo = await db.query.users.findFirst({
+                where: (users, { eq, and }) => and(
+                    eq(users.email, email),
+                    eq(users.isActive, true),
+                ),
+            });
+
+            if (!userInfo) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "User not found"
                 });
             }
 
@@ -367,7 +391,7 @@ export class tRPCAuthServices {
             // 6. Update the user's password in the database
             await db.update(userCredentials)
                 .set({ passwordHash: hashedPassword })
-                .where(eq(userCredentials.userId, userId));
+                .where(eq(userCredentials.userId, userInfo.id));
 
             // 7. Cleanup: Delete session and OTP data from Redis to prevent reuse
             await redis.del(`reset_password:${email as string}`);
@@ -379,7 +403,7 @@ export class tRPCAuthServices {
             return HandlerSuccess.success("Password has been reset successfully.");
 
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 }

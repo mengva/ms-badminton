@@ -51,12 +51,10 @@ export default function ResetPasswordFormPage() {
     });
 
     function onSubmit(values: ZodValidationClientResetPassword) {
-        if (values) {
-            resetPasswordMutation.mutate({
-                code: values.code,
-                password: values.password
-            });
-        }
+        resetPasswordMutation.mutate({
+            code: values.code,
+            password: values.password
+        });
     }
 
     return (

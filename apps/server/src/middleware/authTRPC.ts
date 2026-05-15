@@ -1,7 +1,7 @@
 import { t } from "../server/trpc/procedures";
 import { TRPCError } from "@trpc/server";
 import db from "../config/db";
-import { Helper, TRPCErrorServices } from "../utils";
+import { Helper, tRPCErrorServices } from "../utils";
 import { tokenName } from "@/server/packages/utils";
 
 export class tRPCUserAuthMiddleware {
@@ -28,7 +28,7 @@ export class tRPCUserAuthMiddleware {
                     });
                 }
             } catch (error) {
-                throw TRPCErrorServices.TRPCError(error);
+                throw tRPCErrorServices.tRPCError(error);
                 // If token verification fails, we can ignore the error and allow the user to proceed with authentication
                 // since it means the token is invalid or expired.
             }
@@ -90,7 +90,7 @@ export class tRPCUserAuthMiddleware {
             return await next();
 
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     });
 

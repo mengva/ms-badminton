@@ -44,8 +44,8 @@ export default function SidebarPage() {
     }
 
     return (
-        <aside className="border-r bg-background h-screen sticky top-0">
-            <div className="h-16 border-b flex items-center">
+        <aside className="border-r bg-background h-screen sticky top-0 overflow-y-auto z-50">
+            <div className="h-16 border-b flex items-center sticky top-0 z-20 bg-background">
                 <div className="w-full flex justify-center items-center gap-2">
                     <Image src={MSBadmintionLogo} alt="Logo" width={65} height={65} />
                     <h1 className="text-xl font-bold">

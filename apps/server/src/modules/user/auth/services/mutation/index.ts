@@ -1,16 +1,16 @@
 import { MyContext } from "@/server/server/trpc/context";
 import { tRPCAuthServices } from "../../utils";
-import { HandlerSuccess, TRPCErrorServices } from "@/server/utils";
+import { HandlerSuccess, tRPCErrorServices } from "@/server/utils";
 import { tokenName } from "@/server/packages/utils";
 import { ServerResponseDto, UserRoleDto } from "@/server/packages/types";
 
-export class tRPCUserAuthServices {
+export class tRPCUserAuthMutationServices {
     public static async signIn(ctx: MyContext): Promise<ServerResponseDto | void> {
         try {
             return await tRPCAuthServices.signIn(ctx);
         } catch (error) {
             // Log the error and return standardized error message
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -18,7 +18,7 @@ export class tRPCUserAuthServices {
         try {
             return await tRPCAuthServices.sendCodeSignInOTP(ctx);
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -26,7 +26,7 @@ export class tRPCUserAuthServices {
         try {
             return await tRPCAuthServices.resendCodeSignInOTP(ctx);
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -35,7 +35,7 @@ export class tRPCUserAuthServices {
         try {
             return await tRPCAuthServices.signInOTP(ctx);
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -53,7 +53,7 @@ export class tRPCUserAuthServices {
             return HandlerSuccess.success("Logged out successfully");
 
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -62,7 +62,7 @@ export class tRPCUserAuthServices {
         try {
             return await tRPCAuthServices.sendCodeResetPassword(ctx);
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -71,7 +71,7 @@ export class tRPCUserAuthServices {
         try {
             return await tRPCAuthServices.resendCode(ctx);
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 
@@ -79,7 +79,7 @@ export class tRPCUserAuthServices {
         try {
             return await tRPCAuthServices.resetPassword(ctx);
         } catch (error) {
-            throw TRPCErrorServices.TRPCError(error);
+            throw tRPCErrorServices.tRPCError(error);
         }
     }
 }

@@ -2,9 +2,9 @@
 
 import React, { memo } from "react"
 import { useEffect, useState } from "react"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@workspace/ui/components/sidebar"
+import { SidebarProvider, SidebarContent } from "@workspace/ui/components/sidebar"
 import { AppSidebar } from "./app-sidebar"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import TopbarPage from "./topbar"
 
 interface AdminLayoutProps {
@@ -12,7 +12,8 @@ interface AdminLayoutProps {
 }
 
 const AdminLayoutPage = memo(({ children }: AdminLayoutProps) => {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const router = useRouter();
 
   const [isAuth, setIsAuth] = useState(false)
   const [mounted, setMounted] = useState(false);
@@ -21,6 +22,17 @@ const AdminLayoutPage = memo(({ children }: AdminLayoutProps) => {
     const auth = pathname.startsWith("/auth");
     setIsAuth(auth);
   }, [pathname]);
+
+
+  // const { data: response } = trpc.app.user.auth.isVerifyToken.useQuery();
+
+  // useEffect(() => {
+  //   const type = response?.data?.type;
+  //   console.log("type", type);
+  //   if (type === "ERROR") {
+  //     return router.push("/auth/signin");
+  //   }
+  // }, [response?.data]);
 
   useEffect(() => {
     setMounted(true);
@@ -35,19 +47,21 @@ const AdminLayoutPage = memo(({ children }: AdminLayoutProps) => {
     <>
       {
         isAuth ? (
-          <main>
+          <main className="p-4">
             {children}
           </main>
         ) :
           <>
             <SidebarProvider>
               <AppSidebar />
-              <SidebarInset>
+              <SidebarContent>
                 <main>
                   <TopbarPage />
-                  {children}
+                  <div className="p-4">
+                    {children}
+                  </div>
                 </main>
-              </SidebarInset>
+              </SidebarContent>
             </SidebarProvider>
           </>
       }

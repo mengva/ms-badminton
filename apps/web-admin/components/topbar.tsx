@@ -99,7 +99,7 @@ export default function TopbarPage() {
         const saved = localStorage.getItem("app-language") as Language | null;
         const browserLang = navigator.language.split("-")[0];
         if (browserLang) {
-            const defaultLang: Language = ["en", "th", "lo"].includes(browserLang) ? (browserLang as Language) : "en";
+            const defaultLang: Language = ["en", "th", "lo"].includes(browserLang) ? (browserLang as Language) : "lo";
             setLang(saved || defaultLang);
         }
     }, []);
@@ -140,9 +140,9 @@ export default function TopbarPage() {
 
     return (
         <>
-            <header className="flex h-16 items-center justify-between border-b bg-background px-6">
+            <header className="flex sticky top-0 z-30 h-16 items-center justify-between border-b bg-background px-6">
                 <div className="flex items-center gap-4">
-                    <SidebarTrigger className="hidden md:block" />
+                    <SidebarTrigger/>
                     <h1 className="text-xl font-semibold">{t.adminDashboard}</h1>
                 </div>
 
@@ -269,7 +269,7 @@ export default function TopbarPage() {
                             </DropdownMenuItem>
 
                             {/* Language Switcher */}
-                            {/* <DropdownMenu>
+                            <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <DropdownMenuItem className="cursor-pointer">
                                         <Globe className="mr-2 h-4 w-4" />
@@ -287,7 +287,7 @@ export default function TopbarPage() {
                                         <span className="mr-2">🇱🇦</span> ລາວ
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
-                            </DropdownMenu> */}
+                            </DropdownMenu>
 
                             <DropdownMenuSeparator />
 
