@@ -6,6 +6,7 @@ import {
     timestamp,
     index,
     numeric,
+    boolean,
 } from "drizzle-orm/pg-core";
 
 // ==================== 7. Court Types ====================
@@ -13,6 +14,7 @@ export const courtTypes = pgTable("court_types", {
     id: uuid("id").defaultRandom().primaryKey(),
     typeName: varchar("type_name", { length: 50 }).notNull().unique(),
     description: text("description"),
+    isActive: boolean("is_active").default(true).notNull(),
     hourlyRate: numeric("hourly_rate", { precision: 10, scale: 2 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),

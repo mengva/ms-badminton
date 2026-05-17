@@ -5,7 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { TRPCProvider } from "./trpc";
 import { Metadata } from "next";
-import AdminLayoutPage from "@/components/admin-layout";
+import VerifyLayoutPage from "@/components/verify-layout";
 
 const customizeFont = localFont({
   src: "../../../packages/src/fonts/Phetsarath_OT.ttf",
@@ -36,10 +36,10 @@ export default function RootLayout({
           <div id="web" className="w-full h-screen fixed inset-0 overflow-y-auto">
             <TRPCProvider>
               <Providers>
-                <AdminLayoutPage>
+                <VerifyLayoutPage>
                   {children}
                   <Toaster position="bottom-right" />
-                </AdminLayoutPage>
+                </VerifyLayoutPage>
               </Providers>
             </TRPCProvider>
           </div>

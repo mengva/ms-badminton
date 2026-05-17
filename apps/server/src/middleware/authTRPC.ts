@@ -93,5 +93,4 @@ export class tRPCUserAuthMiddleware {
             throw tRPCErrorServices.tRPCError(error);
         }
     });
-
 }

@@ -1,38 +1,50 @@
 "use client"
 
-import React, { memo } from "react"
+import React, { createContext, memo } from "react"
 import { useEffect, useState } from "react"
 import { SidebarProvider, SidebarContent } from "@workspace/ui/components/sidebar"
 import { AppSidebar } from "./app-sidebar"
-import { usePathname, useRouter } from "next/navigation"
 import TopbarPage from "./topbar"
+import { trpc } from "@/app/trpc"
+import LoadingSpinnerComponent from "./loading"
 
 interface AdminLayoutProps {
   children: React.ReactNode
 }
 
-const AdminLayoutPage = memo(({ children }: AdminLayoutProps) => {
-  const pathname = usePathname();
-  const router = useRouter();
+type UserRoleDto = "Staff" | "Owner" | "Customer";
 
-  const [isAuth, setIsAuth] = useState(false)
+interface UserContextDto {
+  userRole: UserRoleDto;
+  isLoading: boolean;
+  isRefetching: boolean;
+  refetch: () => void;
+  setUserRole:React.Dispatch<React.SetStateAction<UserRoleDto>>;
+}
+
+export const UserRoleContext = createContext<UserContextDto | undefined>(undefined);
+
+const AdminLayoutPage = memo(({ children }: AdminLayoutProps) => {
+
   const [mounted, setMounted] = useState(false);
+  const [userRole, setUserRole] = useState("Customer" as UserRoleDto)
+
+  const {
+    data: response,
+    isLoading,
+    refetch,
+    isRefetching
+  } = trpc.app.user.get.getUserRole.useQuery({
+    refetchOnWindowFocus: true,
+    keepPreviousData: false, // smooth page transition
+  });
 
   useEffect(() => {
-    const auth = pathname.startsWith("/auth");
-    setIsAuth(auth);
-  }, [pathname]);
-
-
-  // const { data: response } = trpc.app.user.auth.isVerifyToken.useQuery();
-
-  // useEffect(() => {
-  //   const type = response?.data?.type;
-  //   console.log("type", type);
-  //   if (type === "ERROR") {
-  //     return router.push("/auth/signin");
-  //   }
-  // }, [response?.data]);
+    const role = response?.data as UserRoleDto;
+    if (role && role !== "Customer") {
+      setUserRole(role);
+    }
+  }, [response?.data]);
 
   useEffect(() => {
     setMounted(true);
@@ -46,12 +58,9 @@ const AdminLayoutPage = memo(({ children }: AdminLayoutProps) => {
   return (
     <>
       {
-        isAuth ? (
-          <main className="p-4">
-            {children}
-          </main>
-        ) :
-          <>
+        (isLoading || userRole === "Customer") ?
+          <LoadingSpinnerComponent /> :
+          <UserRoleContext.Provider value={{ userRole, refetch, isLoading, isRefetching, setUserRole }}>
             <SidebarProvider>
               <AppSidebar />
               <SidebarContent>
@@ -63,7 +72,8 @@ const AdminLayoutPage = memo(({ children }: AdminLayoutProps) => {
                 </main>
               </SidebarContent>
             </SidebarProvider>
-          </>
+          </UserRoleContext.Provider>
+
       }
     </>
   )

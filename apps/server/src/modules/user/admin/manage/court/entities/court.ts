@@ -6,6 +6,7 @@ import {
     text,
     timestamp,
     index,
+    boolean,
 } from "drizzle-orm/pg-core";
 import { courtTypes } from "../../courtType/entities";
 import { courtStatusEnum } from "./enum";
@@ -17,6 +18,7 @@ export const courts = pgTable("courts", {
     typeId: uuid("type_id").notNull().references(() => courtTypes.id, { onDelete: "cascade" }),
     courtName: varchar("court_name", { length: 100 }).notNull(),
     location: text("location"),
+    isActive: boolean("is_active").default(true).notNull(),
     status: courtStatusEnum("status").default("Available"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),

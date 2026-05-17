@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     Card,
     CardContent,
@@ -18,12 +18,72 @@ import {
     TableHeader,
     TableRow,
 } from "@workspace/ui/components/table";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@workspace/ui/components/select";
 import { Edit, Eye, MoreHorizontal, RotateCw, Search, Trash2 } from 'lucide-react';
 import { cn } from '@workspace/ui/lib/utils';
 import { Badge } from '@workspace/ui/components/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@workspace/ui/components/dropdown-menu';
+import { PaginationFilterDto } from '@/admin/packages/types';
+import { trpc } from '@/app/trpc';
+import { Spinner } from '@workspace/ui/components/spinner';
+import { PaginationComponent } from '@/components/pagination';
+import { statusOptions } from '@/utils/constants';
+import LoadingBodyBodyItemInfoComponent from '@/components/loadingTableBodyItem';
+import GlobalHelper from '@/admin/packages/utils/globalHelper';
+
+export interface CourtTypeDto {
+    id: string;
+    courtName: string;
+    location: string;
+    isActive: boolean;
+    status: "Available" | "Maintenance" | "Occupied";                    // e.g. "ACTIVE", "INACTIVE", "MAINTENANCE"
+    createdAt: Date;
+    updatedAt: Date;
+    typeName: string;
+    description: string;
+    hourlyRate: number;
+    ownerFullName: string;
+    ownerRole: "Staff" | "Owner" | "Customer";
+}
 
 function CourtTypePage() {
+    const [courtTypes, setCourtTypes] = useState<CourtTypeDto[]>([]);
+    const [filter, setFilter] = useState({
+        page: 1,
+        limit: 20
+    });
+    const [paginationFilter, setPaginationFilter] = useState({
+        total: 20,
+        page: 1,
+        totalPage: 1,
+        limit: 20,
+    } as PaginationFilterDto);
+
+    const {
+        data: response,
+        isLoading,
+        refetch,
+        isRefetching,
+    } = trpc.app.user.admin.master_data.courtType.list.useQuery(filter, {
+        refetchOnWindowFocus: false,
+        keepPreviousData: true, // smooth page transition
+    });
+
+    useEffect(() => {
+        if (response) {
+            const result = response?.data;
+            const courtTypeInfos: CourtTypeDto[] = result?.data ?? []; // the array
+            const pagination: PaginationFilterDto = result?.pagination; // pagination info
+            setCourtTypes(courtTypeInfos);
+            setPaginationFilter(pagination);
+        }
+    }, [response]);
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -55,11 +115,35 @@ function CourtTypePage() {
                                 className="pl-10"
                             />
                         </div>
+                        <Select>
+                            <SelectTrigger className='w-full sm:w-40'>
+                                <SelectValue placeholder="ສະຖານະ" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {
+                                    statusOptions.map((positionOption, index) => (
+                                        <SelectItem key={index} value={positionOption.value}>
+                                            {positionOption.label}
+                                        </SelectItem>
+                                    ))
+                                }
+                            </SelectContent>
+                        </Select>
+
                         {/* Actions */}
                         <div className="flex gap-2">
-                            <Button className="cursor-pointer">
-                                <RotateCw className={cn("mr-2 h-4 w-4")} />
-                                ໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                            <Button onClick={refetch} disabled={isRefetching} className="cursor-pointer">
+                                {
+                                    isRefetching ?
+                                        <>
+                                            <Spinner />
+                                            ກຳລັງໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                                        </> :
+                                        <>
+                                            <RotateCw className={cn("mr-2 h-4 w-4")} />
+                                            ໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                                        </>
+                                }
                             </Button>
                         </div>
                     </div>
@@ -84,58 +168,82 @@ function CourtTypePage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {[1, 2, 3, 4, 5].map((court) => (
-                                    <TableRow key={court}>
-                                        <TableCell>{court}</TableCell>
-                                        <TableCell>ປະເພດເດິ່ນ {court}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={"default"}>ເຄື່ອນໄຫວ</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            ລາຍລະອຽດເດິ່ນ {court}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={"secondary"}>50000ກີບ/ຊົ່ວໂມງ</Badge>
-                                        </TableCell>
-                                        <TableCell>2026/12/31</TableCell>
-                                        <TableCell className='flex justify-end'>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
+                                {
+                                    isLoading ?
+                                        <TableRow>
+                                            <TableCell colSpan={7}>
+                                                <LoadingBodyBodyItemInfoComponent />
+                                            </TableCell>
+                                        </TableRow>
+                                        : courtTypes.length ? courtTypes.map((court, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>
+                                                    {(index + 1).toString().padStart(4, "0")}
+                                                </TableCell>
+                                                <TableCell>{court.typeName}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={"default"}>ເຄື່ອນໄຫວ</Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {
+                                                        court.description
+                                                    }
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={"secondary"}>
+                                                        {court.hourlyRate}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>2
+                                                    {GlobalHelper.formatDate(court.createdAt)}
+                                                </TableCell>
+                                                <TableCell className='flex justify-end'>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
 
-                                                <DropdownMenuContent align="end">
-                                                    {/* DELETE */}
-                                                    <DropdownMenuItem
-                                                        className="text-red-500 hover:text-red-600! cursor-pointer"
-                                                    >
-                                                        <Trash2 className="mr-2 h-4 w-4 text-red-600" />
-                                                        ລຶບ
-                                                    </DropdownMenuItem>
+                                                        <DropdownMenuContent align="end">
+                                                            {/* DELETE */}
+                                                            <DropdownMenuItem
+                                                                className="text-red-500 hover:text-red-600! cursor-pointer"
+                                                            >
+                                                                <Trash2 className="mr-2 h-4 w-4 text-red-600" />
+                                                                ລຶບ
+                                                            </DropdownMenuItem>
 
-                                                    {/* EDIT */}
-                                                    <DropdownMenuItem
-                                                        className="text-green-500 hover:text-green-600! cursor-pointer"
-                                                    >
-                                                        <Edit className="mr-2 h-4 w-4 text-green-500" />
-                                                        ແກ້ໄຂ
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        className="text-sky-500 hover:text-sky-600! cursor-pointer"
-                                                    >
-                                                        <Eye className="mr-2 h-4 w-4 text-sky-500" />
-                                                        ລາຍລະອຽດ
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                                            {/* EDIT */}
+                                                            <DropdownMenuItem
+                                                                className="text-green-500 hover:text-green-600! cursor-pointer"
+                                                            >
+                                                                <Edit className="mr-2 h-4 w-4 text-green-500" />
+                                                                ແກ້ໄຂ
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                className="text-sky-500 hover:text-sky-600! cursor-pointer"
+                                                            >
+                                                                <Eye className="mr-2 h-4 w-4 text-sky-500" />
+                                                                ລາຍລະອຽດ
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        )) :
+                                            <TableRow>
+                                                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                                                    ບໍ່ພົບເຈົ້າຂອງເດິ່ນ
+                                                </TableCell>
+                                            </TableRow>
+                                }
                             </TableBody>
                         </Table>
                     </div>
+                    {
+                        courtTypes.length > 0 && paginationFilter.totalPage > 1 && <PaginationComponent data={courtTypes} filter={filter} setFilter={setFilter} pagination={paginationFilter} handleFetchData={refetch} />
+                    }
                 </CardContent>
             </Card>
         </div>

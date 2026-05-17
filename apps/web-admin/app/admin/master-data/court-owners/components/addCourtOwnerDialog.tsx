@@ -1,4 +1,4 @@
-import { ZodValidationAddStaff, zodValidationAddStaff } from '@/admin/packages/validations/master-data';
+import { ZodValidationAddNewStaff, zodValidationAddNewStaff } from '@/admin/packages/validations/master-data';
 import { ZodValidationAddCourtOwner, zodValidationAddCourtOwner } from '@/admin/packages/validations/master-data';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@workspace/ui/components/button';

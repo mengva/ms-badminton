@@ -1,4 +1,6 @@
-import { ZodValidationAddStaff, zodValidationAddStaff } from '@/admin/packages/validations/master-data';
+import { ServerResponseDto } from '@/admin/packages/types';
+import { ZodValidationAddNewStaff, zodValidationAddNewStaff } from '@/admin/packages/validations/master-data';
+import { trpc } from '@/app/trpc';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@workspace/ui/components/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@workspace/ui/components/dialog';
@@ -10,6 +12,7 @@ import { AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
 
 
 interface AddStaffDialogDto {
@@ -37,8 +40,8 @@ function AddStaffDialogComponent({
     const router = useRouter();
 
     const [showConfirmClose, setShowConfirmClose] = useState(false);
-    const form = useForm<ZodValidationAddStaff>({
-        resolver: zodResolver(zodValidationAddStaff),
+    const form = useForm<ZodValidationAddNewStaff>({
+        resolver: zodResolver(zodValidationAddNewStaff),
         defaultValues: {
             fullName: "",
             email: "",
@@ -84,10 +87,18 @@ function AddStaffDialogComponent({
         setShowConfirmClose(false); // DO NOT reset form — keep editing
     };
 
+    const addNewStaffMutation = trpc.app.user.admin.master_data.staff.addNewStaff.useMutation({
+        onSuccess: (data: ServerResponseDto) => {
+            toast.success(data.message);
+            setOpen(false);
+        },
+        onError: (error: Error) => {
+            toast.error(error.message);
+        }
+    });
 
-
-    const onSubmit = (values: ZodValidationAddStaff) => {
-
+    const onSubmit = (values: ZodValidationAddNewStaff) => {
+        addNewStaffMutation.mutate(values);
     }
 
     return <>
@@ -121,7 +132,7 @@ function AddStaffDialogComponent({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>ຊື່-ນາມສະກຸນ <span className="text-red-500">*</span></FormLabel>
-                                    
+
                                     <FormControl>
                                         <Input
                                             placeholder="ຊື່-ນາມສະກຸນ"
@@ -229,7 +240,9 @@ function AddStaffDialogComponent({
 
                         <div>
                             <Button type="submit" className="w-full cursor-pointer" variant="default">
-                                ເພີ່ມພະນັກງານ
+                                {
+                                    addNewStaffMutation.isPending ? "ກຳລັງເຮັດວຽກຢູ່..." : "ເພີ່ມພະນັກງານ"
+                                }
                             </Button>
                         </div>
                     </form>
@@ -243,7 +256,7 @@ function AddStaffDialogComponent({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <AlertCircle className="h-5 w-5 text-destructive" />
-                       <div className='text-2xl font-bold'>ຍົກເລີກການປ່ຽນແປງບໍ?</div>
+                        <div className='text-2xl font-bold'>ຍົກເລີກການປ່ຽນແປງບໍ?</div>
                     </DialogTitle>
                     <DialogDescription>
                         ທ່ານມີການປ່ຽນແປງທີ່ຍັງບໍ່ໄດ້ບັນທຶກໄວ້. ຖ້າທ່ານປິດກ່ອງໂຕ້ຕອບນີ້, ການປ່ຽນແປງຂອງທ່ານຈະສູນຫາຍໄປ.

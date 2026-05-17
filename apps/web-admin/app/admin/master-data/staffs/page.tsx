@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     Card,
     CardContent,
@@ -30,6 +30,25 @@ import { cn } from '@workspace/ui/lib/utils';
 import { Badge } from '@workspace/ui/components/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@workspace/ui/components/dropdown-menu';
 import AddStaffDialogComponent from './components/addStaffDialog';
+import { trpc } from '@/app/trpc';
+import { PaginationFilterDto } from '@/admin/packages/types';
+import GlobalHelper from '@/admin/packages/utils/globalHelper';
+import { Spinner } from '@workspace/ui/components/spinner';
+import { PaginationComponent } from '@/components/pagination';
+import LoadingBodyBodyItemInfoComponent from '@/components/loadingTableBodyItem';
+
+interface UserDto {
+    id: string;
+    fullName: string;
+    phoneNumber?: string;
+    email?: string;
+    role: "Staff" | "Owner" | "Customer";
+    position: "Manager" | "Staff"
+    isActive: boolean;
+    salary: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
 
 const statusOptions = [
     { label: "ເຄື່ອນໄຫວ", value: "active" },
@@ -38,6 +57,39 @@ const statusOptions = [
 
 function StaffPage() {
     const [openAddStaffDialog, setOpenAddStaffDialog] = React.useState(false);
+    const [users, setUsers] = useState<UserDto[]>([]);
+    const [filter, setFilter] = useState({
+        page: 1,
+        limit: 20
+    });
+    const [paginationFilter, setPaginationFilter] = useState({
+        total: 20,
+        page: 1,
+        totalPage: 1,
+        limit: 20,
+    } as PaginationFilterDto);
+
+    const {
+        data: response,
+        isLoading,
+        refetch,
+        isRefetching,
+    } = trpc.app.user.admin.master_data.staff.list.useQuery(filter, {
+        refetchOnWindowFocus: false,
+        keepPreviousData: true, // smooth page transition
+    });
+
+    useEffect(() => {
+        if (response) {
+            const result = response?.data;
+            const userInfos: UserDto[] = result?.data ?? []; // the array
+            console.log("userInfos", userInfos);
+            const pagination: PaginationFilterDto = result?.pagination; // pagination info
+            setUsers(userInfos);
+            setPaginationFilter(pagination);
+        }
+    }, [response]);
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -85,9 +137,18 @@ function StaffPage() {
 
                         {/* Actions */}
                         <div className="flex gap-2">
-                            <Button className="cursor-pointer">
-                                <RotateCw className={cn("mr-2 h-4 w-4")} />
-                                ໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                            <Button onClick={refetch} disabled={isRefetching} className="cursor-pointer">
+                                {
+                                    isRefetching ?
+                                        <>
+                                            <Spinner />
+                                            ກຳລັງໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                                        </> :
+                                        <>
+                                            <RotateCw className={cn("mr-2 h-4 w-4")} />
+                                            ໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                                        </>
+                                }
                             </Button>
                         </div>
                     </div>
@@ -112,50 +173,75 @@ function StaffPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {[1, 2, 3, 4, 5].map((user) => (
-                                    <TableRow key={user}>
-                                        <TableCell>{user}</TableCell>
-                                        <TableCell>ເຊົ້າ</TableCell>
-                                        <TableCell>
-                                            <Badge variant={"default"}>ພະນັກງານ</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={"default"}>ເຄື່ອນໄຫວ</Badge>
-                                        </TableCell>
-                                        <TableCell>089-123-4567</TableCell>
-                                        <TableCell>2026/12/31</TableCell>
-                                        <TableCell className='flex justify-end'>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
+                                {
+                                    isLoading ?
+                                        <TableRow>
+                                            <TableCell colSpan={7}>
+                                                <LoadingBodyBodyItemInfoComponent />
+                                            </TableCell>
+                                        </TableRow>
+                                        : users.length ? users.map((user, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>
+                                                    {(index + 1).toString().padStart(4, "0")}
+                                                </TableCell>
+                                                <TableCell>{user.fullName}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={
+                                                        user.position === "Manager" ? "default" : "info"
+                                                    }>
+                                                        {user.position === "Manager" ? "ຜູ້ຈັດການ" : "ພະນັກງານທົ່ວໄປ"}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={
+                                                        user.isActive === true ? "default" : "destructive"
+                                                    }>
+                                                        {user.isActive === true ? "ເຄື່ອນໄຫວ" : "ບໍ່ເຄື່ອນໄຫວ"}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>{user.phoneNumber}</TableCell>
+                                                <TableCell>{GlobalHelper.formatDate(user.createdAt)}</TableCell>
+                                                <TableCell className='flex justify-end'>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
 
-                                                <DropdownMenuContent align="end">
-                                                    {/* DETAIL */}
-                                                    <DropdownMenuItem
-                                                        className="text-blue-500 hover:text-blue-600! cursor-pointer"
-                                                    >
-                                                        <Eye className="mr-2 h-4 w-4 text-blue-600" />
-                                                        ລາຍລະອຽດ
-                                                    </DropdownMenuItem>
+                                                        <DropdownMenuContent align="end">
+                                                            {/* DETAIL */}
+                                                            <DropdownMenuItem
+                                                                className="text-blue-500 hover:text-blue-600! cursor-pointer"
+                                                            >
+                                                                <Eye className="mr-2 h-4 w-4 text-blue-600" />
+                                                                ລາຍລະອຽດ
+                                                            </DropdownMenuItem>
 
-                                                    {/* EDIT */}
-                                                    <DropdownMenuItem
-                                                        className="text-green-500 hover:text-green-600! cursor-pointer"
-                                                    >
-                                                        <Edit className="mr-2 h-4 w-4 text-green-500" />
-                                                        ແກ້ໄຂສະຖານະ
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                                            {/* EDIT */}
+                                                            <DropdownMenuItem
+                                                                className="text-green-500 hover:text-green-600! cursor-pointer"
+                                                            >
+                                                                <Edit className="mr-2 h-4 w-4 text-green-500" />
+                                                                ແກ້ໄຂສະຖານະ
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        )) : <TableRow>
+                                            <TableCell colSpan={7} className="text-center text-muted-foreground">
+                                                ບໍ່ພົບພະນັກງານ
+                                            </TableCell>
+                                        </TableRow>
+                                }
                             </TableBody>
                         </Table>
                     </div>
+                    {
+                        users.length > 0 && paginationFilter.totalPage > 1 && <PaginationComponent data={users} filter={filter} setFilter={setFilter} pagination={paginationFilter} handleFetchData={refetch} />
+                    }
                 </CardContent>
             </Card>
         </div>

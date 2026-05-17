@@ -5,6 +5,7 @@ import { Helper } from "../utils";
 import { ErrorHandler } from "@/server/packages/utils";
 import { Context as HonoContext } from "hono";
 import { getUserAgent } from "../server/trpc/context";
+import { eq } from "drizzle-orm";
 
 export const generateUser = async (c: HonoContext) => {
     try {
@@ -28,6 +29,14 @@ export const generateUser = async (c: HonoContext) => {
             console.log("User already exists.");
             return;
         }
+
+        const [ownerIsMain] = await db.select({
+            isMain: courtOwners.isMain
+        }).from(courtOwners).where(
+            eq(courtOwners.isMain, true)
+        ).execute()
+
+        const isMain = Boolean(!ownerIsMain?.isMain)
 
         const password = "msBadminton09@&.com";
 
@@ -75,6 +84,7 @@ export const generateUser = async (c: HonoContext) => {
                 userId: newUserId,
                 companyName: "MS Badminton",
                 address: "123 Main Street, City, Country",
+                isMain: isMain
             });
 
             console.log("User generated successfully.");
