@@ -7,8 +7,9 @@ import { Input } from "@workspace/ui/components/input";
 import { Badge } from "@workspace/ui/components/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
-import { Search, Clock, User, LogOut } from "lucide-react";
+import { Search, Clock, User, LogOut, RotateCw } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@workspace/ui/lib/utils";
 
 const activeCheckIns = [
     {
@@ -64,16 +65,14 @@ export default function VerifyCheckInPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-wrap gap-4">
-                        <div className="flex-1">
-                            <div className="relative">
-                                <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="ຄົ້ນຫາດ້ວຍຊື່ລູກຄ້າ, Booking ID, ຫຼື ເດີ່ນ..."
-                                    className="pl-10"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                />
-                            </div>
+                        <div className="relative sm:w-80">
+                            <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="ຄົ້ນຫາດ້ວຍຊື່ລູກຄ້າ, Booking ID, ຫຼື ເດີ່ນ..."
+                                className="pl-10"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
                         </div>
 
                         <Select value={courtFilter} onValueChange={setCourtFilter}>
@@ -86,6 +85,11 @@ export default function VerifyCheckInPage() {
                                 <SelectItem value="B-03">ເດີ່ນ B-03</SelectItem>
                             </SelectContent>
                         </Select>
+                        {/* Actions */}
+                        <Button className="cursor-pointer">
+                            <RotateCw className={cn("mr-2 h-4 w-4")} />
+                            ໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -99,6 +103,7 @@ export default function VerifyCheckInPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead>ລໍາດັບ</TableHead>
                                 <TableHead>Check-in ID</TableHead>
                                 <TableHead>Booking ID</TableHead>
                                 <TableHead>ລູກຄ້າ</TableHead>
@@ -110,8 +115,9 @@ export default function VerifyCheckInPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredCheckIns.map((item) => (
-                                <TableRow key={item.id} className="hover:bg-muted/50">
+                            {filteredCheckIns.map((item, index) => (
+                                <TableRow key={index} className="hover:bg-muted/50">
+                                    <TableCell className="font-mono text-sm">{ (index + 1).toString().padStart(4, "0") }</TableCell>
                                     <TableCell className="font-mono text-sm">{item.id}</TableCell>
                                     <TableCell className="font-mono text-sm">{item.bookingId}</TableCell>
                                     <TableCell>

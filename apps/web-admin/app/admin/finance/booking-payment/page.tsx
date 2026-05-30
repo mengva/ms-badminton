@@ -6,7 +6,11 @@ import { format } from "date-fns";
 import {
     Plus,
     Search,
-    CreditCard
+    CreditCard,
+    RotateCw,
+    Verified,
+    MoreHorizontal,
+    Eye
 } from "lucide-react";
 
 import { Button } from "@workspace/ui/components/button";
@@ -44,6 +48,8 @@ import {
 } from "@workspace/ui/components/dialog";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
+import { cn } from "@workspace/ui/lib/utils";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu";
 
 interface BookingPayment {
     id: string;
@@ -56,7 +62,7 @@ interface BookingPayment {
     totalAmount: number;
     paidAmount: number;
     remainingAmount: number;
-    status: "Pending" | "PartiallyPaid" | "Paid" | "Cancelled";
+    status: "Pending" | "PartiallyPaid" | "FullPaid" | "Paid" | "Cancelled";
     paymentStatus: "Paid" | "Pending" | "Failed";
 }
 
@@ -96,7 +102,7 @@ export default function BookingPaymentPage() {
             totalAmount: 300000,
             paidAmount: 300000,
             remainingAmount: 0,
-            status: "Paid",
+            status: "FullPaid",
             paymentStatus: "Paid",
         },
         {
@@ -108,9 +114,9 @@ export default function BookingPaymentPage() {
             startTime: "17:00",
             endTime: "19:00",
             totalAmount: 450000,
-            paidAmount: 0,
-            remainingAmount: 450000,
-            status: "Pending",
+            paidAmount: 150000,
+            remainingAmount: 300000,
+            status: "PartiallyPaid",
             paymentStatus: "Pending",
         },
     ]);
@@ -161,7 +167,9 @@ export default function BookingPaymentPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "Paid":
-                return <Badge className="bg-green-500">ຊຳລະສຳເລັດ</Badge>;
+                return <Badge variant={"default"}>ຊຳລະສຳເລັດ</Badge>;
+            case "FullPaid":
+                return <Badge variant={"info"}>ຈ່າຍເຕັມແລ້ວ</Badge>;
             case "PartiallyPaid":
                 return <Badge variant="secondary">ຊຳລະບາງສ່ວນ</Badge>;
             case "Pending":
@@ -178,10 +186,10 @@ export default function BookingPaymentPage() {
                     <h1 className="text-3xl font-bold">ຊຳລະການຈອງເດີ່ນ</h1>
                     <p className="text-muted-foreground">ຈັດການການຊຳລະເງິນສຳລັບການຈອງເດີ່ນ</p>
                 </div>
-                <Button onClick={() => alert("ເປີດຟອມສ້າງການຈ່າຍໃໝ່")}>
+                {/* <Button onClick={() => alert("ເປີດຟອມສ້າງການຈ່າຍໃໝ່")}>
                     <Plus className="mr-2 h-4 w-4" />
                     ບັນທຶກການຊຳລະໃໝ່
-                </Button>
+                </Button> */}
             </div>
 
             <Card>
@@ -193,8 +201,8 @@ export default function BookingPaymentPage() {
                 </CardHeader>
                 <CardContent>
                     {/* Filters */}
-                    <div className="flex flex-col md:flex-row gap-4 mb-6">
-                        <div className="flex-1 relative">
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <div className="relative sm:w-80">
                             <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="ຄົ້ນຫາດ້ວຍ Booking ID ຫຼື ຊື່ລູກຄ້າ..."
@@ -205,37 +213,48 @@ export default function BookingPaymentPage() {
                         </div>
 
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-full md:w-60">
+                            <SelectTrigger className="w-full md:w-40">
                                 <SelectValue placeholder="ສະຖານະ" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">ທັງໝົດ</SelectItem>
-                                <SelectItem value="Pending">ຄ້າງຊຳລະ</SelectItem>
                                 <SelectItem value="PartiallyPaid">ຊຳລະບາງສ່ວນ</SelectItem>
                                 <SelectItem value="Paid">ຊຳລະສຳເລັດ</SelectItem>
                             </SelectContent>
                         </Select>
+                        {/* Actions */}
+                        <Button className="cursor-pointer">
+                            <RotateCw className={cn("mr-2 h-4 w-4")} />
+                            ໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                        </Button>
                     </div>
+                </CardContent>
+            </Card>
 
+            <Card>
+                <CardContent>
                     {/* Data Table */}
                     <div className="rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Booking ID</TableHead>
+                                    <TableHead>ລໍາດັບ</TableHead>
+                                    <TableHead>ລະຫັດການຈອງ</TableHead>
                                     <TableHead>ລູກຄ້າ</TableHead>
                                     <TableHead>ເດີ່ນ</TableHead>
                                     <TableHead>ວັນທີ</TableHead>
-                                    <TableHead className="text-right">ລວມທັງໝົດ</TableHead>
-                                    <TableHead className="text-right">ຊຳລະແລ້ວ</TableHead>
-                                    <TableHead className="text-right">ຄ້າງຊຳລະ</TableHead>
+                                    <TableHead>ລວມທັງໝົດ</TableHead>
+                                    <TableHead>ຊຳລະແລ້ວ</TableHead>
+                                    <TableHead>ຄ້າງຊຳລະ</TableHead>
                                     <TableHead>ສະຖານະ</TableHead>
-                                    <TableHead className="text-center">ຈັດການ</TableHead>
+                                    <TableHead className="text-right">ຈັດການ</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredPayments.map((payment) => (
-                                    <TableRow key={payment.id}>
+                                {filteredPayments.map((payment, index) => {
+                                    return (
+                                        <TableRow key={index}>
+                                        <TableCell className="font-mono text-sm">{(index + 1).toString().padStart(4, "0")}</TableCell>
                                         <TableCell className="font-medium">{payment.bookingId}</TableCell>
                                         <TableCell>{payment.customerName}</TableCell>
                                         <TableCell>{payment.courtName}</TableCell>
@@ -245,29 +264,46 @@ export default function BookingPaymentPage() {
                                                 {payment.startTime} - {payment.endTime}
                                             </span>
                                         </TableCell>
-                                        <TableCell className="text-right font-medium">
-                                            {payment.totalAmount.toLocaleString()} ຂ
+                                        <TableCell className="font-medium">
+                                            {payment.totalAmount.toLocaleString()} ກິບ
                                         </TableCell>
-                                        <TableCell className="text-right text-green-600">
-                                            {payment.paidAmount.toLocaleString()} ຂ
+                                        <TableCell className="text-green-600">
+                                            {payment.paidAmount.toLocaleString()} ກິບ
                                         </TableCell>
-                                        <TableCell className="text-right font-medium text-orange-600">
-                                            {payment.remainingAmount.toLocaleString()} ຂ
+                                        <TableCell className={`font-medium ${payment.remainingAmount === 0 ? 'text-blue-600' : 'text-orange-600'}`}>
+                                            {
+                                            payment.remainingAmount.toLocaleString()
+                                            } ກິບ
                                         </TableCell>
                                         <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                                        <TableCell className="text-center">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => openPaymentModal(payment)}
-                                                disabled={payment.status === "Paid"}
-                                            >
-                                                <CreditCard className="mr-2 h-4 w-4" />
-                                                ຊຳລະ
-                                            </Button>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        disabled={payment.status === "Paid"}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        <Verified />
+                                                        ຢືນຢັນການຈອງ
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="cursor-pointer"
+                                                    >
+                                                        <Eye className="mr-2 h-4 w-4" />
+                                                        ລາຍລະອຽດ
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                    )
+                                })}
                             </TableBody>
                         </Table>
                     </div>
@@ -306,6 +342,7 @@ export default function BookingPaymentPage() {
                                 id="amount"
                                 type="number"
                                 value={paymentAmount}
+                                readOnly
                                 onChange={(e) => setPaymentAmount(e.target.value)}
                             />
                         </div>
@@ -313,7 +350,7 @@ export default function BookingPaymentPage() {
                         <div className="space-y-2">
                             <Label>ຮູບແບບການຊຳລະ</Label>
                             <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

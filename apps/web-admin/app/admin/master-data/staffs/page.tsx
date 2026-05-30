@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {
     Card,
     CardContent,
@@ -16,6 +16,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@workspace/ui/components/select";
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@workspace/ui/components/dialog";
+
 import { Button } from "@workspace/ui/components/button";
 import {
     Table,
@@ -31,11 +41,14 @@ import { Badge } from '@workspace/ui/components/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@workspace/ui/components/dropdown-menu';
 import AddStaffDialogComponent from './components/addStaffDialog';
 import { trpc } from '@/app/trpc';
-import { PaginationFilterDto } from '@/admin/packages/types';
+import { PaginationFilterDto, ServerResponseDto, UserRoleDto } from '@/admin/packages/types';
 import GlobalHelper from '@/admin/packages/utils/globalHelper';
 import { Spinner } from '@workspace/ui/components/spinner';
 import { PaginationComponent } from '@/components/pagination';
 import LoadingBodyBodyItemInfoComponent from '@/components/loadingTableBodyItem';
+import toast from 'react-hot-toast';
+import { StatusOptionDto, statusOptions } from '@/utils/constants';
+import { UserRoleContext } from '@/components/admin-layout';
 
 interface UserDto {
     id: string;
@@ -50,18 +63,24 @@ interface UserDto {
     updatedAt: Date;
 }
 
-const statusOptions = [
-    { label: "ເຄື່ອນໄຫວ", value: "active" },
-    { label: "ບໍ່ເຄື່ອນໄຫວ", value: "inActive" }
-]
+type StatusDto = "Active" | "InActive";
 
 function StaffPage() {
+    const useUserContext = useContext(UserRoleContext);
     const [openAddStaffDialog, setOpenAddStaffDialog] = React.useState(false);
     const [users, setUsers] = useState<UserDto[]>([]);
+    const [userId, setUserId] = useState<string>("");
+    // const [userRole, setUserRole] = useState("" as UserRoleDto);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [newStatus, setNewStatus] = useState<StatusDto>("Active");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statuses, setStatuses] = useState("Active" as StatusDto);
+    const isOwner = useUserContext?.userRole === "Owner";
     const [filter, setFilter] = useState({
         page: 1,
         limit: 20
     });
+
     const [paginationFilter, setPaginationFilter] = useState({
         total: 20,
         page: 1,
@@ -79,11 +98,70 @@ function StaffPage() {
         keepPreviousData: true, // smooth page transition
     });
 
+    const searchQueryMutation = trpc.app.user.admin.master_data.staff.searchQuery.useMutation({
+        onSuccess: (data: ServerResponseDto) => {
+            if (data && data.success) {
+                const result = data?.data;
+                const searchQueryPagination = result?.pagination;
+                const searchQueryData = result?.data;
+                if (searchQueryData && searchQueryPagination) {
+                    setUsers([...searchQueryData]);
+                    setPaginationFilter(searchQueryPagination);
+                }
+            }
+        },
+        onError: (error: Error) => {
+            toast.error(error.message);
+        }
+    });
+
+    const changeStatusMutation = trpc.app.user.admin.master_data.staff.updatedStaffStatus.useMutation({
+        onSuccess: (data: ServerResponseDto) => {
+            if (data && data.success) {
+                if (newStatus === "InActive" && statuses === "Active") {
+                    setUsers(prevUsers => {
+                        return prevUsers.filter(user => user.id !== userId);
+                    });
+                } else if (newStatus === "Active" && statuses === "InActive") {
+                    setUsers(prevUsers => {
+                        return prevUsers.filter(user => user.id !== userId);
+                    });
+                }
+                setUserId("");
+                setIsEditDialogOpen(false);
+                toast.success(data.message);
+            }
+        },
+        onError: (error: Error) => {
+            console.log(error.message);
+            toast.error(error.message);
+        }
+    });
+
+    const isLoadingChangeStatus = Boolean(changeStatusMutation.isLoading);
+
+    const handleSearchQuery = () => {
+        searchQueryMutation.mutate({
+            ...filter,
+            query: searchQuery.trim() ?? "",
+            isActive: statuses
+        })
+    }
+
+    const handleSaveStatus = async () => {
+        if (newStatus && userId) {
+            changeStatusMutation.mutate({
+                status: newStatus,
+                staffId: userId
+            });
+        }
+    }
+
     useEffect(() => {
         if (response) {
             const result = response?.data;
+            useUserContext?.setUserRole(result?.userRole)
             const userInfos: UserDto[] = result?.data ?? []; // the array
-            console.log("userInfos", userInfos);
             const pagination: PaginationFilterDto = result?.pagination; // pagination info
             setUsers(userInfos);
             setPaginationFilter(pagination);
@@ -98,7 +176,7 @@ function StaffPage() {
                     <p className="text-muted-foreground">ຈັດການຜູ້ໃຊ້ ແລະ ສະຖານະຕ່າງໆ</p>
                 </div>
                 <div>
-                    <AddStaffDialogComponent setOpen={setOpenAddStaffDialog} open={openAddStaffDialog} />
+                    <AddStaffDialogComponent setOpen={setOpenAddStaffDialog} open={openAddStaffDialog} refresh={refetch} />
                 </div>
             </div>
 
@@ -117,10 +195,29 @@ function StaffPage() {
                             <Input
                                 placeholder="ຄົ້ນຫາພະນັກງານ..."
                                 className="pl-10"
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value.trim())}
+                                onInput={e => {
+                                    const value = (e.target as HTMLInputElement).value.toLowerCase()
+                                    if (!value) {
+                                        refetch();
+                                        return;
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleSearchQuery();
+                                }}
                             />
                         </div>
 
-                        <Select>
+                        <Select value={statuses} onValueChange={(s: StatusOptionDto['value']) => {
+                            setStatuses(s);
+                            searchQueryMutation.mutate({
+                                ...filter,
+                                query: searchQuery.trim() ?? "",
+                                isActive: s
+                            });
+                        }}>
                             <SelectTrigger className='w-full sm:w-40'>
                                 <SelectValue placeholder="ສະຖານະ" />
                             </SelectTrigger>
@@ -137,7 +234,11 @@ function StaffPage() {
 
                         {/* Actions */}
                         <div className="flex gap-2">
-                            <Button onClick={refetch} disabled={isRefetching} className="cursor-pointer">
+                            <Button onClick={() => {
+                                refetch();
+                                setSearchQuery("");
+                                setStatuses("Active");
+                            }} disabled={isRefetching} className="cursor-pointer">
                                 {
                                     isRefetching ?
                                         <>
@@ -163,18 +264,18 @@ function StaffPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>ລະຫັດ</TableHead>
+                                    <TableHead>ລໍາດັບ</TableHead>
                                     <TableHead>ຊື່ ເເລະ ນາມສະກູນ</TableHead>
                                     <TableHead>ຕຳແໜ່ງ</TableHead>
                                     <TableHead>ສະຖານະ</TableHead>
                                     <TableHead>ເບີໂທລະສັບ</TableHead>
                                     <TableHead>ວັນທີສ້າງ</TableHead>
-                                    <TableHead className='flex justify-end items-center'>ຕົວເລືອກຕ່າງໆ</TableHead>
+                                    <TableHead className='flex justify-end items-center'>ຈັດການ</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {
-                                    isLoading ?
+                                    (isLoading || isRefetching) ?
                                         <TableRow>
                                             <TableCell colSpan={7}>
                                                 <LoadingBodyBodyItemInfoComponent />
@@ -220,19 +321,25 @@ function StaffPage() {
                                                             </DropdownMenuItem>
 
                                                             {/* EDIT */}
-                                                            <DropdownMenuItem
-                                                                className="text-green-500 hover:text-green-600! cursor-pointer"
-                                                            >
-                                                                <Edit className="mr-2 h-4 w-4 text-green-500" />
-                                                                ແກ້ໄຂສະຖານະ
-                                                            </DropdownMenuItem>
+                                                            {
+                                                                isOwner &&
+                                                                <DropdownMenuItem onClick={() => {
+                                                                    setIsEditDialogOpen(true);
+                                                                    setUserId(user.id);
+                                                                }}
+                                                                    className="text-green-500 hover:text-green-600! cursor-pointer"
+                                                                >
+                                                                    <Edit className="mr-2 h-4 w-4 text-green-500" />
+                                                                    ແກ້ໄຂສະຖານະ
+                                                                </DropdownMenuItem>
+                                                            }
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>
                                             </TableRow>
                                         )) : <TableRow>
                                             <TableCell colSpan={7} className="text-center text-muted-foreground">
-                                                ບໍ່ພົບພະນັກງານ
+                                                ບໍ່ມີຂໍ້ມູນ
                                             </TableCell>
                                         </TableRow>
                                 }
@@ -244,6 +351,55 @@ function StaffPage() {
                     }
                 </CardContent>
             </Card>
+
+            {/* ==================== EDIT STATUS DIALOG ==================== */}
+            <Dialog open={isEditDialogOpen} onOpenChange={value => {
+                if (!value) {
+                    setUserId("");
+                    setStatuses("Active");
+                }
+                setIsEditDialogOpen(value);
+            }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>ແກ້ໄຂສະຖານະພະນັກງານ</DialogTitle>
+                        <DialogDescription>
+                            ປ່ຽນສະຖານະຂອງພະນັກງານ
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="py-4">
+                        <label className="text-sm font-medium mb-2 block">
+                            ສະຖານະພະນັກງານ
+                        </label>
+                        <Select value={newStatus} onValueChange={(value: StatusDto) => setNewStatus(value)}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Active">ເຄື່ອນໄຫວ</SelectItem>
+                                <SelectItem value="InActive">ບໍ່ເຄື່ອນໄຫວ</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => {
+                            setIsEditDialogOpen(false);
+                            setUserId("");
+                            setStatuses("Active");
+                        }}>
+                            ຍົກເລີກ
+                        </Button>
+                        <Button disabled={isLoadingChangeStatus} onClick={handleSaveStatus}>
+                            {
+                                isLoadingChangeStatus ? "ກຳລັງເຮັດວຽກຢູ່..." : "ບັນທຶກການປ່ຽນແປງ"
+                            }
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
         </div>
     )
 }

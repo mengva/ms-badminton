@@ -71,12 +71,14 @@ type Booking = {
     status: "Pending" | "Confirmed" | "Cancelled";
 };
 
+type ChangeBookingStatus = "Pending" | "Confirmed";
+
 // ==================== MOCK DATA ====================
 const initialBookings: Booking[] = [
     {
-        id: "BK-001",
-        customer: "John Doe",
-        court: "Court A",
+        id: "BK-20260513-8921",
+        customer: "ຈອນ ໂດ",
+        court: "ເດີ່ນ A",
         bookingDate: "2026-05-12",
         startTime: "08:00",
         endTime: "10:00",
@@ -85,9 +87,9 @@ const initialBookings: Booking[] = [
         status: "Cancelled",
     },
     {
-        id: "BK-002",
-        customer: "Alex",
-        court: "Court B",
+        id: "BK-20260513-8922",
+        customer: "ອາເລັກ",
+        court: "ເດີ່ນ B",
         bookingDate: "2026-05-12",
         startTime: "13:00",
         endTime: "15:00",
@@ -96,9 +98,9 @@ const initialBookings: Booking[] = [
         status: "Cancelled",
     },
     {
-        id: "BK-003",
-        customer: "David",
-        court: "Court C",
+        id: "BK-20260513-8923",
+        customer: "ເດວິດ",
+        court: "ເດີ່ນ C",
         bookingDate: "2026-05-13",
         startTime: "18:00",
         endTime: "20:00",
@@ -112,12 +114,11 @@ export default function AdminCancelledBookingPage() {
     const [bookings, setBookings] = useState<Booking[]>(initialBookings);
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [newStatus, setNewStatus] = useState<Booking["status"]>("Pending");
+    const [newStatus, setNewStatus] = useState<ChangeBookingStatus>("Pending");
 
     // Open Edit Dialog
     const handleEditClick = (booking: Booking) => {
         setSelectedBooking(booking);
-        setNewStatus(booking.status);
         setIsEditDialogOpen(true);
     };
 
@@ -128,7 +129,7 @@ export default function AdminCancelledBookingPage() {
         setBookings((prev) =>
             prev.map((b) =>
                 b.id === selectedBooking.id ? { ...b, status: newStatus } : b
-            )
+            ).filter(b => b.status === "Cancelled")
         );
 
         setIsEditDialogOpen(false);
@@ -213,19 +214,21 @@ export default function AdminCancelledBookingPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Booking ID</TableHead>
-                                    <TableHead>Customer</TableHead>
-                                    <TableHead>Court</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Time</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Action</TableHead>
+                                    <TableHead>ລໍາດັບ</TableHead>
+                                    <TableHead>ລະຫັດການຈອງ</TableHead>
+                                    <TableHead>ລູກຄ້າ</TableHead>
+                                    <TableHead>ເດີ່ນ</TableHead>
+                                    <TableHead>ວັນທີ</TableHead>
+                                    <TableHead>ເວລາ</TableHead>
+                                    <TableHead>ສະຖານະ</TableHead>
+                                    <TableHead className="text-right">ຈັດການ</TableHead>
                                 </TableRow>
                             </TableHeader>
 
                             <TableBody>
-                                {bookings.map((booking) => (
-                                    <TableRow key={booking.id}>
+                                {bookings.map((booking, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell className="font-medium"> {(index + 1).toString().padStart(4, "0")}</TableCell>
                                         <TableCell className="font-medium">{booking.id}</TableCell>
                                         <TableCell>{booking.customer}</TableCell>
                                         <TableCell>{booking.court}</TableCell>
@@ -237,7 +240,7 @@ export default function AdminCancelledBookingPage() {
                                             <Badge
                                                 variant={"destructive"}
                                             >
-                                                {booking.status}
+                                                {booking.status === "Cancelled" && "ຍົກເລີກແລ້ວ"}
                                             </Badge>
                                         </TableCell>
 
@@ -251,7 +254,7 @@ export default function AdminCancelledBookingPage() {
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem className="cursor-pointer">
                                                         <Eye className="mr-2 size-4" />
-                                                        ເບິ່ງ
+                                                        ເບິ່ງລາຍລະອຽດ
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         className="cursor-pointer"
@@ -267,18 +270,6 @@ export default function AdminCancelledBookingPage() {
                                 ))}
                             </TableBody>
                         </Table>
-                    </div>
-
-                    {/* Pagination */}
-                    <div className="flex items-center justify-between mt-6">
-                        <p className="text-sm text-muted-foreground">
-                            Showing 1 to {bookings.length} of {bookings.length} bookings
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">Previous</Button>
-                            <Button size="sm">1</Button>
-                            <Button variant="outline" size="sm">Next</Button>
-                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -297,14 +288,13 @@ export default function AdminCancelledBookingPage() {
                         <label className="text-sm font-medium mb-2 block">
                             ສະຖານະການຈອງ
                         </label>
-                        <Select value={newStatus} onValueChange={(value: any) => setNewStatus(value)}>
+                        <Select value={newStatus} onValueChange={(value: ChangeBookingStatus) => setNewStatus(value)}>
                             <SelectTrigger className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                                <SelectItem value="Confirmed">Confirmed</SelectItem>
-                                <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                <SelectItem value="Pending">ລໍຖ້າການອະນຸມັດ</SelectItem>
+                                <SelectItem value="Confirmed">ຢືນຢັນແລ້ວ</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

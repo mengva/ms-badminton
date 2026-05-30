@@ -23,13 +23,14 @@ import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { Bell, LogOut, User, Moon, Sun, Monitor, Globe } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import trpc from "@/app/trpc/client";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { ServerResponseDto } from "@/admin/packages/types/constants";
 import { appBarTranslations } from "@/utils/translations/topbar";
+import { UserRoleContext } from "./admin-layout";
 
 type Language = keyof typeof appBarTranslations;
 
@@ -83,6 +84,7 @@ const mockApplications = [
 ];
 
 export default function TopbarPage() {
+    const useUserContext = useContext(UserRoleContext);
     const router = useRouter();
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
@@ -260,7 +262,7 @@ export default function TopbarPage() {
                             </Avatar>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>{t.myAccount}</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t.myAccount} { useUserContext?.userRole }</DropdownMenuLabel>
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem className="cursor-pointer">

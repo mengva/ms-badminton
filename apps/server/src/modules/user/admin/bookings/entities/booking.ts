@@ -7,6 +7,7 @@ import {
     index,
     time,
     numeric,
+    varchar,
 } from "drizzle-orm/pg-core";
 import { bookingStatusEnum } from "./enum";
 import { courts } from "../../manage/court/entities";
@@ -14,6 +15,7 @@ import { courts } from "../../manage/court/entities";
 // ==================== 9. Bookings ====================
 export const bookings = pgTable("bookings", {
     id: uuid("id").defaultRandom().primaryKey(),
+    bookingCode: varchar("booking_code", { length: 30 }).notNull().unique(),
     customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     cancelledById: uuid("cancelled_by_id").references(() => users.id, { onDelete: "cascade" }),
     courtId: uuid("court_id").notNull().references(() => courts.id, { onDelete: "cascade" }),
@@ -26,6 +28,7 @@ export const bookings = pgTable("bookings", {
     totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull().default("0.00"),
     status: bookingStatusEnum("status").default("Pending"),
     cancelReason: text("cancel_reason"),
+    players: varchar("players").notNull().default("0"),
     cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),

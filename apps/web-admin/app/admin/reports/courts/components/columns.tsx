@@ -24,6 +24,10 @@ export type Court = {
 
 export const columns: ColumnDef<Court>[] = [
     {
+        accessorKey: "id",
+        header: "ລໍາດັບ",
+    },
+    {
         accessorKey: "courtName",
         header: "ຊື່ເດີ່ນ",
     },
@@ -56,11 +60,11 @@ export const columns: ColumnDef<Court>[] = [
                 variant = "default";
                 label = "ຫວ່າງ";
             } else if (status === "Occupied") {
-                variant = "destructive";
+                variant = "info";
                 label = "ກຳລັງໃຊ້";
             } else if (status === "Maintenance") {
-                variant = "secondary";
-                label = "ສຳລັບບຳລຸງຮັກສາ";
+                variant = "destructive";
+                label = "ບຳລຸງຮັກສາ";
             }
 
             return <Badge variant={variant as any}>{label}</Badge>;

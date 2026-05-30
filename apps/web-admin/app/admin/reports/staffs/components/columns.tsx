@@ -24,6 +24,10 @@ export type Staff = {
 
 export const columns: ColumnDef<Staff>[] = [
     {
+        accessorKey: "id",
+        header: "ລໍາດັບ",
+    },
+    {
         accessorKey: "fullName",
         header: "ຊື່ເຕັມ",
     },
@@ -53,7 +57,7 @@ export const columns: ColumnDef<Staff>[] = [
         cell: ({ row }) => {
             const isActive = row.getValue("isActive") as boolean;
             return (
-                <Badge variant={isActive ? "default" : "secondary"}>
+                <Badge variant={isActive ? "default" : "destructive"}>
                     {isActive ? "ເຮັດວຽກ" : "ຢຸດເຮັດວຽກ"}
                 </Badge>
             );

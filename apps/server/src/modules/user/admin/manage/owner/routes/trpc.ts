@@ -1,5 +1,5 @@
-import { zodValidationAddCourtOwner, zodValidationSearchQueryCourtOwner, zodValitionUserId } from "@/server/packages/validations/master-data";
-import { zodValidationFilter } from "@/server/packages/validations";
+import { zodValidationCreateCourtOwner, zodValidationSearchQueryCourtOwner, zodValitionUserId } from "@/server/packages/validations/master-data";
+import { zodValidationFilter, zodValidationGlobalStatus } from "@/server/packages/validations";
 import { publicProcedure, router } from "@/server/server/trpc/procedures";
 import { tRPCManageCourtOwnerQueries } from "../severices/queries";
 import { tRPCManageOwnerMutationServices } from "../severices/mutation";
@@ -33,19 +33,26 @@ export const tRPCManageCourtOwnerRouter = router({
     searchQuery: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
         .input(zodValidationSearchQueryCourtOwner)
-        .query(async ({ input }) => {
-            return await tRPCManageCourtOwnerQueries.searchQuery(input);
+        .mutation(async ({ input }) => {
+            return await tRPCManageOwnerMutationServices.searchQuery(input);
         }),
 
     /**
      * Create new court owner member
      */
-    addNewStaff: publicProcedure
+    createNewStaff: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
-        .input(zodValidationAddCourtOwner)
+        .input(zodValidationCreateCourtOwner)
         .mutation(async ({ input, ctx }) => {
             // Attach input to context so service can access it
             ctx.bodyInfo = input;
-            return await tRPCManageOwnerMutationServices.addNewOwner(ctx);
+            return await tRPCManageOwnerMutationServices.createNewOwner(ctx);
         }),
+
+    updatedOwnerStatus: publicProcedure
+        .use(tRPCUserAuthMiddleware.isCourtOwner)
+        .input(zodValidationGlobalStatus)
+        .mutation(async ({ input }) => {
+            return await tRPCManageOwnerMutationServices.updatedOwnerStatus(input);
+        })
 });

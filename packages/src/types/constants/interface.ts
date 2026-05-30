@@ -21,6 +21,4 @@ export interface FileDto {
     fileName: string;
     fileType: string;
     size: number; // in bytes
-    width?: number; // in pixels, optional
-    height?: number; // in pixels, optional
 }

@@ -16,6 +16,10 @@ export type Payment = {
 };
 
 export const columns: ColumnDef<Payment>[] = [
+    {
+        accessorKey: "id",
+        header: "ລໍາດັບ",
+    },
     { accessorKey: "bookingId", header: "ເລກການຈອງ" },
     { accessorKey: "customerName", header: "ລູກຄ້າ" },
     {

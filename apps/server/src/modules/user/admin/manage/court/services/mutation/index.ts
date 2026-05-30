@@ -1,10 +1,11 @@
 import db from "@/server/config/db";
-import { courtOwners, courts, courtTypes, images } from "@/server/db";
+import { courtOwners, courts, courtTypes, images, users } from "@/server/db";
 import { ServerResponseDto } from "@/server/packages/types";
-import { ZodValidationAddCourtInfo, ZodValidationAddCourtInfoAndImage } from "@/server/packages/validations/master-data";
+import { ZodValidationAddCourtInfo, ZodValidationAddCourtInfoAndImage, ZodValidationSearchQueryCourt } from "@/server/packages/validations/master-data";
 import { HandlerSuccess, SecureFileUploadServices, tRPCErrorServices } from "@/server/utils";
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or } from "drizzle-orm";
+import { tRPCManageCourtQueries } from "../queries";
 
 export class tRPCManageCourtMutationServices {
     /**
@@ -12,7 +13,7 @@ export class tRPCManageCourtMutationServices {
      * @param ctx - tRPC context (contains authenticated user info)
      * @returns Success response
      */
-    public static async addNewCourtInfoAndImage(
+    public static async createNewCourtInfoAndImage(
         input: ZodValidationAddCourtInfoAndImage
     ): Promise<ServerResponseDto> {
         try {
@@ -56,7 +57,7 @@ export class tRPCManageCourtMutationServices {
             }
 
             // === Use Transaction for Data Consistency ===
-            const result = await db.transaction(async (tx) => {
+            return await db.transaction(async (tx) => {
                 // Insert court
                 const [newCourt] = await tx
                     .insert(courts)
@@ -87,10 +88,9 @@ export class tRPCManageCourtMutationServices {
                     }))
                 );
 
-                return newCourt;
+                return HandlerSuccess.success("Court and images added successfully");
             });
 
-            return HandlerSuccess.success("Court and images added successfully");
 
         } catch (error) {
             // Let your utility handle logging + standardization
@@ -98,7 +98,7 @@ export class tRPCManageCourtMutationServices {
         }
     }
 
-    public static async addNewCourtInfo(
+    public static async createNewCourtInfo(
         input: ZodValidationAddCourtInfo
     ): Promise<ServerResponseDto> {
         try {
@@ -144,6 +144,74 @@ export class tRPCManageCourtMutationServices {
 
         } catch (error) {
             // Let your utility handle logging + standardization
+            throw tRPCErrorServices.tRPCError(error);
+        }
+    }
+
+    public static async searchQuery(input: ZodValidationSearchQueryCourt) {
+        try {
+            const { page, limit, query, isActive } = input;
+            const offset = (page - 1) * limit;
+
+            const where: any[] = [];
+
+            const userIsActive = Boolean(isActive === "Active");
+
+            if (query) {
+                where.push(
+                    or(
+                        ilike(courts.courtName, `%${query}%`),
+                        ilike(courts.location, `%${query}%`),
+                    )
+                );
+            }
+
+            // count total
+            const totalResult = await db
+                .select({ total: count() })
+                .from(courts)
+                .innerJoin(
+                    users, and(
+                        eq(users.id, courts.ownerId),
+                        eq(users.isActive, true)
+                    )
+                )
+                .where(and(
+                    ...where,
+                    eq(courts.isActive, userIsActive)
+                ));
+
+            const total = totalResult[0]?.total ?? 1;
+            // query court data
+            const results = await db
+                .select({ ...tRPCManageCourtQueries.selectCourtInfo })
+                .from(users)
+                .innerJoin(
+                    users, and(
+                        eq(users.id, courts.ownerId),
+                        eq(users.isActive, true)
+                    )
+                )
+                .where(
+                    and(
+                        ...where,
+                        eq(courts.isActive, userIsActive)
+                    )
+                )
+                .orderBy(desc(courts.createdAt))
+                .limit(limit)
+                .offset(offset);
+            const totalPage = Math.ceil(Number(total) / limit) || 1;
+            return HandlerSuccess.success("Queries court successfully", {
+                data: results,
+                pagination: {
+                    total,
+                    page,
+                    totalPage,
+                    limit,
+                },
+            });
+        } catch (error) {
             throw tRPCErrorServices.tRPCError(error);
         }
     }

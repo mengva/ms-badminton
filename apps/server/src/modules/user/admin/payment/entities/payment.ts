@@ -16,6 +16,7 @@ import { bookings } from "../../bookings/entities";
 // ==================== 12. Payments ====================
 export const payments = pgTable("payments", {
     id: uuid("id").defaultRandom().primaryKey(),
+    paymentCode: varchar("payment_code", { length: 30 }).notNull().unique(),
     bookingId: uuid("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
     customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     staffId: uuid("staff_id").references(() => users.id, { onDelete: "cascade" }),

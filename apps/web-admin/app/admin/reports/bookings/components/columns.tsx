@@ -27,6 +27,10 @@ export type Booking = {
 
 export const columns: ColumnDef<Booking>[] = [
     {
+        accessorKey: "id",
+        header: "ລໍາດັບ",
+    },
+    {
         accessorKey: "bookingDate",
         header: "ວັນທີຈອງ",
         cell: ({ row }) => {

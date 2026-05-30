@@ -14,6 +14,7 @@ export const zodValidationSalary = z.string()
     )
 
 export const zodValidationCompanyName = z.string()
+    .nonempty("Company Name is required")
     .refine(
         (val) => !forbiddenHtmlRegex.test(val),
         { message: "Company Name cannot contain HTML tags or script characters (<, >)." }
@@ -24,6 +25,7 @@ export const zodValidationCompanyName = z.string()
     ).default("")
 
 export const zodValidationCourtType = z.string()
+    .nonempty("Court type is required")
     .refine(
         (val) => !forbiddenHtmlRegex.test(val),
         { message: "Court type cannot contain HTML tags or script characters (<, >)." }
@@ -34,6 +36,7 @@ export const zodValidationCourtType = z.string()
     ).default("")
 
 export const zodValidationCourtName = z.string()
+    .nonempty("Court name is required")
     .refine(
         (val) => !forbiddenHtmlRegex.test(val),
         { message: "Court name cannot contain HTML tags or script characters (<, >)." }
@@ -44,6 +47,7 @@ export const zodValidationCourtName = z.string()
     ).default("")
 
 export const zodValidationLocation = z.string()
+    .nonempty("Location is required")
     .refine(
         (val) => !forbiddenHtmlRegex.test(val),
         { message: "Location cannot contain HTML tags or script characters (<, >)." }

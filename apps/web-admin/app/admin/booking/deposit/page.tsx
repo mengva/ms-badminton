@@ -67,48 +67,54 @@ type Booking = {
     startTime: string;
     endTime: string;
     totalHours: number;
+    depositAmount: number;
     totalAmount: number;
     status: "Pending" | "Confirmed" | "Completed";
     paymentType: "Deposit" | "Full"
 };
 
+type ChangeBookingStatus = "Pending" | "Confirmed";
+
 // ==================== MOCK DATA ====================
 const initialBookings: Booking[] = [
     {
-        id: "BK-001",
-        customer: "John Doe",
-        court: "Court A",
+        id: "BK-20260513-8921",
+        customer: "ຈອນ ໂດ",
+        court: "ເດີ່ນ A",
         bookingDate: "2026-05-12",
         startTime: "08:00",
         endTime: "10:00",
         totalHours: 2,
-        totalAmount: 20,
+        depositAmount: 100000,
+        totalAmount: 200000,
         status: "Confirmed",
         paymentType: "Deposit"
     },
     {
-        id: "BK-002",
-        customer: "Alex",
-        court: "Court B",
+        id: "BK-20260513-8922",
+        customer: "ອາເລັກ",
+        court: "ເດີ່ນ B",
         bookingDate: "2026-05-12",
         startTime: "13:00",
         endTime: "15:00",
         totalHours: 2,
-        totalAmount: 30,
+        depositAmount: 150000,
+        totalAmount: 300000,
         status: "Confirmed",
-        paymentType: "Full"
+        paymentType: "Deposit"
     },
     {
-        id: "BK-003",
-        customer: "David",
-        court: "Court C",
+        id: "BK-20260513-8923",
+        customer: "ເດວິດ",
+        court: "ເດີ່ນ C",
         bookingDate: "2026-05-13",
         startTime: "18:00",
         endTime: "20:00",
         totalHours: 2,
-        totalAmount: 40,
+        depositAmount: 75000,
+        totalAmount: 200000,
         status: "Confirmed",
-        paymentType: "Full"
+        paymentType: "Deposit"
     },
 ];
 
@@ -116,12 +122,11 @@ export default function AdminCancelledBookingPage() {
     const [bookings, setBookings] = useState<Booking[]>(initialBookings);
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [newStatus, setNewStatus] = useState<Booking["status"]>("Pending");
+    const [newStatus, setNewStatus] = useState<ChangeBookingStatus>("Pending");
 
     // Open Edit Dialog
     const handleEditClick = (booking: Booking) => {
         setSelectedBooking(booking);
-        setNewStatus(booking.status);
         setIsEditDialogOpen(true);
     };
 
@@ -132,7 +137,7 @@ export default function AdminCancelledBookingPage() {
         setBookings((prev) =>
             prev.map((b) =>
                 b.id === selectedBooking.id ? { ...b, status: newStatus } : b
-            )
+            ).filter(b => b.status === "Confirmed")
         );
 
         setIsEditDialogOpen(false);
@@ -143,21 +148,21 @@ export default function AdminCancelledBookingPage() {
     };
 
     return (
-        <div>
+        <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">
-                        ການຈອງທີ່ຖືກຍົກເລີກທັງໝົດ
+                        ຄ່າມັດຈຳການຈອງທັງໝົດ
                     </h1>
                     <p className="text-muted-foreground">
-                        ການຈອງສະໜາມ MS.Badminton ທີ່ຖືກຍົກເລີກ.
+                       ຄ່າມັດຈຳການຈອງສະໜາມ MS.Badminton ທັງໝົດ.
                     </p>
                 </div>
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <Card>
                     <CardContent className="p-6 flex items-center justify-between">
                         <div>
@@ -183,21 +188,21 @@ export default function AdminCancelledBookingPage() {
                         <h2 className="text-3xl font-bold mt-2">$4,850</h2>
                     </CardContent>
                 </Card>
-            </div>
+            </div> */}
 
             <Card className="mb-6">
                 <CardHeader>
                     <div className="mb-2">
-                        <CardTitle>ລາຍຊື່ການຈອງ</CardTitle>
+                        <CardTitle>ລາຍຊື່ການຈອງ ເເລະ ຄ່າມັດຈຳ</CardTitle>
                         <CardDescription>
-                            ເບິ່ງ ແລະ ຈັດການບັນທຶກການຈອງທັງໝົດ.
+                            ເບິ່ງ ແລະ ຈັດການບັນທຶກການຈອງ ເເລະ ຄ່າມັດຈຳທັງໝົດ.
                         </CardDescription>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative w-full sm:w-80">
                             <Search className="absolute left-2 top-2 size-4 text-muted-foreground" />
-                            <Input placeholder="ຄົ້ນຫາການຈອງ..." className="pl-10" />
+                            <Input placeholder="ຄົ້ນຫາການຈອງ ເເລະ ຄ່າມັດຈຳ..." className="pl-10" />
                         </div>
                         <div>
                             <Button className="cursor-pointer">
@@ -211,88 +216,81 @@ export default function AdminCancelledBookingPage() {
 
             {/* Main Table Card */}
             <Card>
-
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Booking ID</TableHead>
-                                <TableHead>Customer</TableHead>
-                                <TableHead>Court</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Time</TableHead>
-                                <TableHead>Hours</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Payment Type</TableHead>
-                                <TableHead>Booking Status</TableHead>
-                                <TableHead className="text-right">Action</TableHead>
-                            </TableRow>
-                        </TableHeader>
-
-                        <TableBody>
-                            {bookings.map((booking) => (
-                                <TableRow key={booking.id}>
-                                    <TableCell className="font-medium">{booking.id}</TableCell>
-                                    <TableCell>{booking.customer}</TableCell>
-                                    <TableCell>{booking.court}</TableCell>
-                                    <TableCell>{booking.bookingDate}</TableCell>
-                                    <TableCell>
-                                        {booking.startTime} - {booking.endTime}
-                                    </TableCell>
-                                    <TableCell>{booking.totalHours}</TableCell>
-                                    <TableCell>${booking.totalAmount}</TableCell>
-                                    <TableCell>
-                                        <Badge
-                                            variant={booking.paymentType === "Full" ? "default" : "info"}
-                                        >
-                                            {booking.paymentType}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge
-                                            variant={"info"}
-                                        >
-                                            {booking.status}
-                                        </Badge>
-                                    </TableCell>
-
-                                    <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreHorizontal className="size-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    <Eye className="mr-2 size-4" />
-                                                    ເບິ່ງ
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="cursor-pointer"
-                                                    onClick={() => handleEditClick(booking)}
-                                                >
-                                                    <Pencil className="mr-2 size-4" />
-                                                    ແກ້ໄຂສະຖານະ
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
+                    <div className="rounded-xl border overflow-hidden">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>ລໍາດັບ</TableHead>
+                                    <TableHead>ລະຫັດການຈອງ</TableHead>
+                                    <TableHead>ລູກຄ້າ</TableHead>
+                                    <TableHead>ເດີ່ນ</TableHead>
+                                    <TableHead>ວັນທີ</TableHead>
+                                    <TableHead>ເວລາ</TableHead>
+                                    <TableHead>ຊົ່ວໂມງ</TableHead>
+                                    <TableHead>ຈຳນວນເງິນມັດຈຳເດີ່ນ</TableHead>
+                                    <TableHead>ຄ່າເດີ່ນທັງໝົດ</TableHead>
+                                    {/* <TableHead>ປະເພດການຈ່າຍເງິນ</TableHead> */}
+                                    <TableHead>ສະຖານະການຈອງ</TableHead>
+                                    <TableHead className="text-right">ຈັດການ</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
 
-                    {/* Pagination */}
-                    <div className="flex items-center justify-between mt-6">
-                        <p className="text-sm text-muted-foreground">
-                            Showing 1 to {bookings.length} of {bookings.length} bookings
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">Previous</Button>
-                            <Button size="sm">1</Button>
-                            <Button variant="outline" size="sm">Next</Button>
-                        </div>
+                            <TableBody>
+                                {bookings.map((booking, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{(index + 1).toString().padStart(4, "0")}</TableCell>
+                                        <TableCell className="font-medium">{booking.id}</TableCell>
+                                        <TableCell>{booking.customer}</TableCell>
+                                        <TableCell>{booking.court}</TableCell>
+                                        <TableCell>{booking.bookingDate}</TableCell>
+                                        <TableCell>
+                                            {booking.startTime} - {booking.endTime}
+                                        </TableCell>
+                                        <TableCell>{booking.totalHours}</TableCell>
+                                        <TableCell>{booking.depositAmount}ກີບ</TableCell>
+                                        <TableCell>{booking.totalAmount}ກີບ</TableCell>
+                                        {/* <TableCell>
+                                            <Badge
+                                                variant={booking.paymentType === "Full" ? "default" : "info"}
+                                            >
+                                                {booking.paymentType === "Full" ? "ເຕັມ" : "ມັດຈຳ"}
+                                            </Badge>
+                                        </TableCell> */}
+                                        <TableCell>
+                                            <Badge
+                                                variant={"info"}
+                                            >
+                                                {booking.status === "Confirmed" && "ຢືນຢັນແລ້ວ"}
+                                            </Badge>
+                                        </TableCell>
+
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreHorizontal className="size-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem className="cursor-pointer">
+                                                        <Eye className="mr-2 size-4" />
+                                                        ເບິ່ງລາຍລະອຽດ
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="cursor-pointer"
+                                                        onClick={() => handleEditClick(booking)}
+                                                    >
+                                                        <Pencil className="mr-2 size-4" />
+                                                        ແກ້ໄຂສະຖານະ
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </div>
                 </CardContent>
             </Card>
@@ -301,24 +299,23 @@ export default function AdminCancelledBookingPage() {
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>ແກ້ໄຂສະຖານະການຈອງ</DialogTitle>
+                        <DialogTitle>ແກ້ໄຂສະຖານະການຈອງ ເເລະ ຄ່າມັດຈຳ</DialogTitle>
                         <DialogDescription>
-                            ປ່ຽນສະຖານະຂອງການຈອງ <strong>{selectedBooking?.id}</strong>
+                            ປ່ຽນສະຖານະຂອງການຈອງ ເເລະ ຄ່າມັດຈຳ <strong>{selectedBooking?.id}</strong>
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="py-4">
                         <label className="text-sm font-medium mb-2 block">
-                            ສະຖານະການຈອງ
+                            ສະຖານະການຈອງ ເເລະ ຄ່າມັດຈຳ
                         </label>
-                        <Select value={newStatus} onValueChange={(value: any) => setNewStatus(value)}>
+                        <Select value={newStatus} onValueChange={(value: ChangeBookingStatus) => setNewStatus(value)}>
                             <SelectTrigger className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                                <SelectItem value="Confirmed">Confirmed</SelectItem>
-                                <SelectItem value="Cancelled">Completed</SelectItem>
+                                <SelectItem value="Pending">ລໍຖ້າການອະນຸມັດ</SelectItem>
+                                <SelectItem value="Confirmed">ຢືນຢັນແລ້ວ</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

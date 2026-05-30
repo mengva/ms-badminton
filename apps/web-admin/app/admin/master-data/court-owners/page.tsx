@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     Card,
     CardContent,
@@ -18,6 +18,16 @@ import {
     TableHeader,
     TableRow,
 } from "@workspace/ui/components/table";
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@workspace/ui/components/dialog";
+
 import {
     Select,
     SelectContent,
@@ -29,14 +39,15 @@ import { Edit, MoreHorizontal, RotateCw, Search, Trash2 } from 'lucide-react';
 import { cn } from '@workspace/ui/lib/utils';
 import { Badge } from '@workspace/ui/components/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@workspace/ui/components/dropdown-menu';
-import AddCourtOwnerDialogComponent from './components/addCourtOwnerDialog';
-import { PaginationFilterDto } from '@/admin/packages/types';
+import { PaginationFilterDto, ServerResponseDto } from '@/admin/packages/types';
 import { trpc } from '@/app/trpc';
 import { Spinner } from '@workspace/ui/components/spinner';
 import LoadingBodyBodyItemInfoComponent from '@/components/loadingTableBodyItem';
 import GlobalHelper from '@/admin/packages/utils/globalHelper';
 import { PaginationComponent } from '@/components/pagination';
-import { statusOptions } from '@/utils/constants';
+import { StatusOptionDto, statusOptions } from '@/utils/constants';
+import toast from 'react-hot-toast';
+import CreateCourtOwnerDialogComponent from './components/CreateCourtOwnerDialogComponent';
 
 export interface UserDto {
     id: string;
@@ -51,9 +62,13 @@ export interface UserDto {
     address: string | null;
 }
 
+type StatusDto = "Active" | "InActive";
+
 function CourtOwnerPage() {
-    const [openAddCourtOwnerDialog, setOpenAddCourtOwnerDialog] = React.useState(false);
+    const [openCreateCourtOwnerDialog, setOpenCreateCourtOwnerDialog] = React.useState(false);
     const [users, setUsers] = useState<UserDto[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statuses, setStatuses] = useState("Active" as StatusDto);
     const [filter, setFilter] = useState({
         page: 1,
         limit: 20
@@ -75,6 +90,31 @@ function CourtOwnerPage() {
         keepPreviousData: true, // smooth page transition
     });
 
+    const searchQueryMutation = trpc.app.user.admin.master_data.courtType.searchQuery.useMutation({
+        onSuccess: (data: ServerResponseDto) => {
+            if (data && data.success) {
+                const result = data?.data;
+                const searchQueryPagination = result?.pagination;
+                const searchQueryData = result?.data;
+                if (searchQueryData && searchQueryPagination) {
+                    setUsers([...searchQueryData]);
+                    setPaginationFilter(searchQueryPagination);
+                }
+            }
+        },
+        onError: (error: Error) => {
+            toast.error(error.message);
+        }
+    });
+
+    const handleSearchQuery = () => {
+        searchQueryMutation.mutate({
+            ...filter,
+            query: searchQuery.trim() ?? "",
+            isActive: statuses
+        })
+    }
+
     useEffect(() => {
         if (response) {
             const result = response?.data;
@@ -93,7 +133,7 @@ function CourtOwnerPage() {
                     <p className="text-muted-foreground">ຈັດການເຈົ້າຂອງເດິ່ນ ແລະ ສະຖານະຕ່າງໆ</p>
                 </div>
                 <div>
-                    <AddCourtOwnerDialogComponent setOpen={setOpenAddCourtOwnerDialog} open={openAddCourtOwnerDialog} />
+                    <CreateCourtOwnerDialogComponent setOpen={setOpenCreateCourtOwnerDialog} open={openCreateCourtOwnerDialog} />
                 </div>
             </div>
 
@@ -112,9 +152,26 @@ function CourtOwnerPage() {
                             <Input
                                 placeholder="ຄົ້ນຫາເຈົ້າຂອງເດິ່ນ..."
                                 className="pl-10"
+                                onInput={e => {
+                                    const value = (e.target as HTMLInputElement).value.toLowerCase()
+                                    if (!value) {
+                                        refetch();
+                                        return;
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleSearchQuery();
+                                }}
                             />
                         </div>
-                        <Select>
+                        <Select value={statuses} onValueChange={(s: StatusOptionDto['value']) => {
+                            setStatuses(s);
+                            searchQueryMutation.mutate({
+                                ...filter,
+                                query: searchQuery.trim() ?? "",
+                                isActive: s
+                            });
+                        }}>
                             <SelectTrigger className='w-full sm:w-40'>
                                 <SelectValue placeholder="ສະຖານະ" />
                             </SelectTrigger>
@@ -131,7 +188,11 @@ function CourtOwnerPage() {
 
                         {/* Actions */}
                         <div className="flex gap-2">
-                            <Button onClick={refetch} disabled={isRefetching} className="cursor-pointer">
+                            <Button onClick={() => {
+                                refetch();
+                                setSearchQuery("");
+                                setStatuses("Active");
+                            }} disabled={isRefetching} className="cursor-pointer">
                                 {
                                     isRefetching ?
                                         <>
@@ -157,20 +218,20 @@ function CourtOwnerPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>ລະຫັດ</TableHead>
+                                    <TableHead>ລໍາດັບ</TableHead>
                                     <TableHead>ຊື່ ເເລະ ນາມສະກູນ</TableHead>
                                     <TableHead>ສະຖານະ</TableHead>
                                     <TableHead>ບົດບາດ</TableHead>
                                     <TableHead>ເບີໂທລະສັບ</TableHead>
                                     <TableHead>ວັນທີສ້າງ</TableHead>
-                                    <TableHead className='flex justify-end items-center'>ຕົວເລືອກຕ່າງໆ</TableHead>
+                                    <TableHead className='flex justify-end items-center'>ຈັດການ</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {
-                                    isLoading ?
+                                    (isLoading || isRefetching) ?
                                         <TableRow>
-                                            <TableCell colSpan={6}>
+                                            <TableCell colSpan={7}>
                                                 <LoadingBodyBodyItemInfoComponent />
                                             </TableCell>
                                         </TableRow>
@@ -191,7 +252,7 @@ function CourtOwnerPage() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge variant={"default"}>
-                                                        {user.role}
+                                                        {user.role === "Owner" && "ເຈົ້າຂອງເດິ່ນ"}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>{user.phoneNumber}</TableCell>
@@ -207,10 +268,10 @@ function CourtOwnerPage() {
                                                         <DropdownMenuContent align="end">
                                                             {/* DELETE */}
                                                             <DropdownMenuItem
-                                                                className="text-red-500 hover:text-red-600! cursor-pointer"
+                                                                className="text-green-500 hover:text-green-600! cursor-pointer"
                                                             >
-                                                                <Trash2 className="mr-2 h-4 w-4 text-red-600" />
-                                                                ລຶບ
+                                                                <Trash2 className="mr-2 h-4 w-4 text-green-600" />
+                                                                ລາຍລະອຽດ
                                                             </DropdownMenuItem>
 
                                                             {/* EDIT */}
@@ -225,8 +286,8 @@ function CourtOwnerPage() {
                                                 </TableCell>
                                             </TableRow>
                                         )) : <TableRow>
-                                            <TableCell colSpan={6} className="text-center text-muted-foreground">
-                                                ບໍ່ພົບເຈົ້າຂອງເດິ່ນ
+                                            <TableCell colSpan={7} className="text-center text-muted-foreground">
+                                                ບໍ່ມີຂໍ້ມູນ
                                             </TableCell>
                                         </TableRow>
                                 }

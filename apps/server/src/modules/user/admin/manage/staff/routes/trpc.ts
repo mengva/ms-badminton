@@ -1,6 +1,6 @@
 import { tRPCUserAuthMiddleware } from "@/server/middleware/authTRPC";
-import { zodValidationAddNewStaff, zodValidationSearchQueryStaff, zodValitionUserId } from "@/server/packages/validations/master-data";
-import { zodValidationFilter } from "@/server/packages/validations";
+import { zodValidationcreateNewStaff, zodValidationSearchQueryStaff, zodValitionUserId } from "@/server/packages/validations/master-data";
+import { zodValidationFilter, zodValidationGlobalStatus } from "@/server/packages/validations";
 import { publicProcedure, router } from "@/server/server/trpc/procedures";
 import { tRPCManageStaffMutationServices } from "../services/mutation";
 import { tRPCManageStaffQueries } from "../services/queries"; // Renamed for clarity
@@ -12,8 +12,8 @@ export const tRPCManageStaffRouter = router({
     list: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
         .input(zodValidationFilter)
-        .query(async ({ input }) => {
-            return await tRPCManageStaffQueries.list(input);
+        .query(async ({ ctx, input }) => {
+            return await tRPCManageStaffQueries.list(ctx, input);
         }),
 
     /**
@@ -33,19 +33,26 @@ export const tRPCManageStaffRouter = router({
     searchQuery: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
         .input(zodValidationSearchQueryStaff)
-        .query(async ({ input }) => {
-            return await tRPCManageStaffQueries.searchQuery(input);
+        .mutation(async ({ input }) => {
+            return await tRPCManageStaffMutationServices.searchQuery(input);
         }),
 
     /**
      * Create new staff member
      */
-    addNewStaff: publicProcedure
+    createNewStaff: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
-        .input(zodValidationAddNewStaff)
+        .input(zodValidationcreateNewStaff)
         .mutation(async ({ input, ctx }) => {
             // Attach input to context so service can access it
             ctx.bodyInfo = input;
-            return await tRPCManageStaffMutationServices.addNewStaff(ctx);
+            return await tRPCManageStaffMutationServices.createNewStaff(ctx);
         }),
+
+    updatedStaffStatus: publicProcedure
+        .use(tRPCUserAuthMiddleware.isCourtOwner)
+        .input(zodValidationGlobalStatus)
+        .mutation(async ({ input }) => {
+            return await tRPCManageStaffMutationServices.updatedStaffStatus(input);
+        })
 });

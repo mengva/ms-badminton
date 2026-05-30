@@ -22,6 +22,10 @@ export type CheckIn = {
 };
 
 export const columns: ColumnDef<CheckIn>[] = [
+    {
+        accessorKey: "id",
+        header: "ລໍາດັບ",
+    },
     { accessorKey: "bookingId", header: "ເລກການຈອງ" },
     { accessorKey: "customerName", header: "ລູກຄ້າ" },
     { accessorKey: "courtName", header: "ເດີ່ນ" },

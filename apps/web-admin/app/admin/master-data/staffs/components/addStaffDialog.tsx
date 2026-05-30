@@ -1,5 +1,5 @@
 import { ServerResponseDto } from '@/admin/packages/types';
-import { ZodValidationAddNewStaff, zodValidationAddNewStaff } from '@/admin/packages/validations/master-data';
+import { ZodValidationcreateNewStaff, zodValidationcreateNewStaff } from '@/admin/packages/validations/master-data';
 import { trpc } from '@/app/trpc';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@workspace/ui/components/button';
@@ -8,16 +8,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@workspace/ui/components/input';
 import { Label } from '@workspace/ui/components/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@workspace/ui/components/select';
+import { Spinner } from '@workspace/ui/components/spinner';
 import { AlertCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
-
 interface AddStaffDialogDto {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    refresh: () => void;
 }
 
 const positionOptions = [
@@ -34,21 +34,19 @@ const salaryOptions = [
 ];
 
 function AddStaffDialogComponent({
-    open, setOpen
+    open, setOpen, refresh
 }: AddStaffDialogDto) {
 
-    const router = useRouter();
-
     const [showConfirmClose, setShowConfirmClose] = useState(false);
-    const form = useForm<ZodValidationAddNewStaff>({
-        resolver: zodResolver(zodValidationAddNewStaff),
+    const form = useForm<ZodValidationcreateNewStaff>({
+        resolver: zodResolver(zodValidationcreateNewStaff),
         defaultValues: {
             fullName: "",
             email: "",
             phoneNumber: "",
             password: "",
-            salary: "",
-            position: "" as any,
+            // salary: "",
+            // position: "" as any,
         },
     });
 
@@ -67,8 +65,8 @@ function AddStaffDialogComponent({
             email: "",
             phoneNumber: "",
             password: "",
-            salary: "",
-            position: "" as any,
+            // salary: "",
+            // position: "" as any,
         })
         setShowConfirmClose(false);
         setOpen(false);
@@ -79,7 +77,7 @@ function AddStaffDialogComponent({
         if (hasUnsaved) {
             setShowConfirmClose(true);
         } else {
-            setOpen(false);
+            confirmClose();
         }
     };
 
@@ -87,18 +85,19 @@ function AddStaffDialogComponent({
         setShowConfirmClose(false); // DO NOT reset form — keep editing
     };
 
-    const addNewStaffMutation = trpc.app.user.admin.master_data.staff.addNewStaff.useMutation({
+    const createNewStaffMutation = trpc.app.user.admin.master_data.staff.createNewStaff.useMutation({
         onSuccess: (data: ServerResponseDto) => {
             toast.success(data.message);
-            setOpen(false);
+            refresh();
+            confirmClose();
         },
         onError: (error: Error) => {
             toast.error(error.message);
         }
     });
 
-    const onSubmit = (values: ZodValidationAddNewStaff) => {
-        addNewStaffMutation.mutate(values);
+    const onSubmit = (values: ZodValidationcreateNewStaff) => {
+        createNewStaffMutation.mutate(values);
     }
 
     return <>
@@ -196,7 +195,7 @@ function AddStaffDialogComponent({
                             )}
                         />
 
-                        <div>
+                        {/* <div>
                             <Label htmlFor="salary" className='mb-2'>ເງິນເດືອນ</Label>
                             <Select
                                 onValueChange={(value) => form.setValue("salary", value as any)}
@@ -215,9 +214,9 @@ function AddStaffDialogComponent({
                                     }
                                 </SelectContent>
                             </Select>
-                        </div>
+                        </div> */}
 
-                        <div>
+                        {/* <div>
                             <Label htmlFor="position" className='mb-2'>ຕຳແໜ່ງ</Label>
                             <Select
                                 onValueChange={(value) => form.setValue("position", value as any)}
@@ -236,13 +235,12 @@ function AddStaffDialogComponent({
                                     }
                                 </SelectContent>
                             </Select>
-                        </div>
+                        </div> */}
 
                         <div>
-                            <Button type="submit" className="w-full cursor-pointer" variant="default">
-                                {
-                                    addNewStaffMutation.isPending ? "ກຳລັງເຮັດວຽກຢູ່..." : "ເພີ່ມພະນັກງານ"
-                                }
+                            <Button type="submit" className="w-full cursor-pointer py-2" variant="default">
+                                { createNewStaffMutation.isPending && <Spinner /> }
+                                ເພີ່ມພະນັກງານ
                             </Button>
                         </div>
                     </form>

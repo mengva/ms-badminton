@@ -3,10 +3,12 @@ import { TRPCError } from "@trpc/server";
 import db from "../config/db";
 import { Helper, tRPCErrorServices } from "../utils";
 import { tokenName } from "@/server/packages/utils";
+import { MyContext } from "../server/trpc/context";
 
 export class tRPCUserAuthMiddleware {
 
     public static isUserAlreadyAuth = t.middleware(async ({ ctx, next }) => {
+
         const token = ctx.getCookie(tokenName);
 
         if (token) {
@@ -37,7 +39,88 @@ export class tRPCUserAuthMiddleware {
         return await next();
     });
 
+    public static isCourtOwner = t.middleware(async ({ ctx, next }) => {
+        try {
+            const result = await this.isAuthFunc(ctx);
+
+            const userRole = result.userInfo.role;
+
+            if (userRole !== "Owner") {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "You have no a permission"
+                });
+            }
+
+            return await next();
+        } catch (error) {
+            throw tRPCErrorServices.tRPCError(error);
+        }
+    });
+
+    public static isStaff = t.middleware(async ({ ctx, next }) => {
+        try {
+            const result = await this.isAuthFunc(ctx);
+
+            const userRole = result.userInfo.role;
+
+            if (userRole !== "Staff") {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "You have no a permission"
+                });
+            }
+
+            return await next();
+        } catch (error) {
+            throw tRPCErrorServices.tRPCError(error);
+        }
+    });
+
+    public static isUserCustomerAuth = t.middleware(async ({ ctx, next }) => {
+        try {
+
+            const result = await this.isAuthFunc(ctx);
+
+            const userRole = result.userInfo.role;
+
+            if (userRole !== "Customer") {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "Invalid user authentication role",
+                });
+            }
+
+            return await next();
+
+        } catch (error) {
+            throw tRPCErrorServices.tRPCError(error);
+        }
+    });
+
     public static isUserAuth = t.middleware(async ({ ctx, next }) => {
+        try {
+
+            const result = await this.isAuthFunc(ctx);
+
+            const userRole = result.userInfo.role;
+
+            if (userRole === "Customer") {
+                throw new TRPCError({
+                    code: "CONFLICT",
+                    message: "Invalid user authentication role",
+                });
+            }
+
+            // 5. Pass user data to the next procedure context
+            return await next();
+
+        } catch (error) {
+            throw tRPCErrorServices.tRPCError(error);
+        }
+    });
+
+    public static isAuthFunc = async (ctx: MyContext) => {
         // Determine the token name based on the user's role (staff in this case)
 
         // 1. Get token from cookies
@@ -87,10 +170,10 @@ export class tRPCUserAuthMiddleware {
             ctx.userAgent = payload.userAgent; // Attach user agent to context for potential future use (e.g., logging, analytics)
 
             // 5. Pass user data to the next procedure context
-            return await next();
+            return ctx;
 
         } catch (error) {
             throw tRPCErrorServices.tRPCError(error);
         }
-    });
+    }
 }

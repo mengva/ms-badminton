@@ -2,7 +2,7 @@ import z from "zod";
 import { zodValidationEmail, zodValidationFilter, zodValidationFullName, zodValidationPassword, zodValidationPhoneNumber, zodValidationQuery } from "../variables";
 import { zodValidationAddress, zodValidationCompanyName, zodValidationStaffIsActive } from "./variable";
 
-export const zodValidationAddCourtOwner = z.object({
+export const zodValidationCreateCourtOwner = z.object({
     fullName: zodValidationFullName,
     email: zodValidationEmail,
     phoneNumber: zodValidationPhoneNumber,
@@ -17,4 +17,4 @@ export const zodValidationSearchQueryCourtOwner = zodValidationFilter.extend({
 })
 
 export type ZodValidationSearchQueryCourtOwner = z.infer<typeof zodValidationSearchQueryCourtOwner>;
-export type ZodValidationAddCourtOwner = z.infer<typeof zodValidationAddCourtOwner>;
+export type ZodValidationCreateCourtOwner = z.infer<typeof zodValidationCreateCourtOwner>;

@@ -1,8 +1,9 @@
 import { zodValidationSearchQueryStaff, zodValitionUserId } from "@/server/packages/validations/master-data";
-import { zodValidationFilter } from "@/server/packages/validations";
+import { zodValidationFilter, zodValidationGlobalStatus } from "@/server/packages/validations";
 import { publicProcedure, router } from "@/server/server/trpc/procedures";
 import { tRPCManageCustomerQueries } from "../severices/queries";
 import { tRPCUserAuthMiddleware } from "@/server/middleware/authTRPC";
+import { tRPCManageCustomerMutationServices } from "../severices/mutation";
 
 export const tRPCManageCustomerRouter = router({
     /**
@@ -32,7 +33,14 @@ export const tRPCManageCustomerRouter = router({
     searchQuery: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
         .input(zodValidationSearchQueryStaff)
-        .query(async ({ input }) => {
-            return await tRPCManageCustomerQueries.searchQuery(input);
+        .mutation(async ({ input }) => {
+            return await tRPCManageCustomerMutationServices.searchQuery(input);
+        }),
+
+    updatedCustomerStatus: publicProcedure
+        .use(tRPCUserAuthMiddleware.isUserAuth)
+        .input(zodValidationGlobalStatus)
+        .mutation(async ({ input }) => {
+            return await tRPCManageCustomerMutationServices.updatedCustomerStatus(input);
         })
 });

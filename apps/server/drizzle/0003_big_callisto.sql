@@ -1,1 +1,0 @@
-ALTER TABLE "court_owners" ADD COLUMN "is_main" boolean DEFAULT false;

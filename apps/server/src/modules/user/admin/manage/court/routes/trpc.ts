@@ -34,24 +34,24 @@ export const tRPCManageCourtRouter = router({
     searchQuery: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
         .input(zodValidationSearchQueryCourt)
-        .query(async ({ input }) => {
-            return await tRPCManageCourtQueries.searchQuery(input);
+        .mutation(async ({ input }) => {
+            return await tRPCManageCourtMutationServices.searchQuery(input);
         }),
 
-    addNewCourtInfoAndImage: publicProcedure
+    createNewCourtInfoAndImage: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
         .input(zodValidationAddCourtInfoAndImage)
         .mutation(async ({ input }) => {
             // Pass input directly instead of mutating ctx (cleaner & safer)
-            return await tRPCManageCourtMutationServices.addNewCourtInfoAndImage(input);
+            return await tRPCManageCourtMutationServices.createNewCourtInfoAndImage(input);
         }),
 
-    addNewCourtInfo: publicProcedure
+    createNewCourtInfo: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
         .input(zodValidationAddCourtInfo)
         .mutation(async ({ input }) => {
             // Pass input directly instead of mutating ctx (cleaner & safer)
-            return await tRPCManageCourtMutationServices.addNewCourtInfo(input);
+            return await tRPCManageCourtMutationServices.createNewCourtInfo(input);
         }),
 
 });

@@ -25,22 +25,23 @@ const zodValidationDescription = z.string()
         { message: "Description contain links (http://, https://, www.)." }
     )
 
-const zodValidationHourtyRate = z.string()
-    .nonempty("hourly Rate is required")
+const zodValidationHourlyRate = z.string()
+    .nonempty("Hourly rate is required")
+    .regex(/^\d+$/, "Hourly rate must contain numbers only (0-9)")
     .refine(
         (val) => !forbiddenHtmlRegex.test(val),
-        { message: "hourly Rate contain HTML tags or script characters (<, >)." }
+        { message: "Hourly rate cannot contain HTML tags or script characters (<, >)." }
     )
     .refine(
         (val) => !forbiddenLinkRegex.test(val),
-        { message: "hourly Rate contain links (http://, https://, www.)." }
+        { message: "Hourly rate cannot contain links (http://, https://, www.)." }
     )
 
 // variable zod object
 export const zodValidationAddCourtTypeInfo = z.object({
     typeName: zodValidationTypeName,
     description: zodValidationDescription,
-    hourlyRate: zodValidationHourtyRate
+    hourlyRate: zodValidationHourlyRate
 });
 
 export type ZodValidationAddCourtTypeInfo = z.infer<typeof zodValidationAddCourtTypeInfo>;

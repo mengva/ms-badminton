@@ -228,7 +228,6 @@ export const zodValidationLastName = z.string()
 export const zodValidationOrderBy = z.enum(['desc', 'asc']).default("desc");
 
 export const zodValidationQuery = z.string()
-    .nonempty("Query is required")
     .refine(
         (val) => !forbiddenHtmlRegex.test(val),
         { message: "Query cannot contain HTML tags or script characters (<, >)." }
@@ -236,7 +235,9 @@ export const zodValidationQuery = z.string()
     .refine(
         (val) => !forbiddenLinkRegex.test(val),
         { message: "Query cannot contain links (http://, https://, www.)." }
-    )
+    ).default("");
+
+export const zodValidationStatus = z.enum(["Active", "InActive"]).default("Active");
 
 // file zod
 export const zodValidationFile = z.object({

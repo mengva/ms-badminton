@@ -18,6 +18,15 @@ export const tRPCManageCourtTypeRouter = router({
         }),
 
     /**
+     * Get paginated list of court type
+     */
+    getTypeList: publicProcedure
+        .use(tRPCUserAuthMiddleware.isUserAuth)
+        .query(async () => {
+            return await tRPCManageCourtTypeQueries.getTypeList();
+        }),
+
+    /**
      * Get single court type by ID
      */
     getOne: publicProcedure
@@ -34,16 +43,16 @@ export const tRPCManageCourtTypeRouter = router({
     searchQuery: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
         .input(zodValidationSearchQueryCourt)
-        .query(async ({ input }) => {
-            return await tRPCManageCourtTypeQueries.searchQuery(input);
+        .mutation(async ({ input }) => {
+            return await tRPCManageCourtTypeMutationServices.searchQuery(input);
         }),
 
-    addNewCourtTypeInfo: publicProcedure
+    createNewCourtTypeInfo: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
         .input(zodValidationAddCourtTypeInfo)
         .mutation(async ({ input }) => {
             // Pass input directly instead of mutating ctx (cleaner & safer)
-            return await tRPCManageCourtTypeMutationServices.addNewCourtTypeInfo(input);
+            return await tRPCManageCourtTypeMutationServices.createNewCourtTypeInfo(input);
         }),
 
 });

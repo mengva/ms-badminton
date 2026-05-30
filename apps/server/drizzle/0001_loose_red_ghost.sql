@@ -1,1 +1,0 @@
-CREATE TYPE "public"."invoice_status" AS ENUM('Unpaid', 'PartiallyPaid', 'Paid', 'Cancelled');

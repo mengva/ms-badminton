@@ -18,6 +18,16 @@ import {
     TableHeader,
     TableRow,
 } from "@workspace/ui/components/table";
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@workspace/ui/components/dialog";
+
 import {
     Select,
     SelectContent,
@@ -29,20 +39,22 @@ import { Edit, Eye, MoreHorizontal, RotateCw, Search, Trash2 } from 'lucide-reac
 import { cn } from '@workspace/ui/lib/utils';
 import { Badge } from '@workspace/ui/components/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@workspace/ui/components/dropdown-menu';
-import { PaginationFilterDto } from '@/admin/packages/types';
+import { PaginationFilterDto, ServerResponseDto } from '@/admin/packages/types';
 import { trpc } from '@/app/trpc';
 import { Spinner } from '@workspace/ui/components/spinner';
 import { PaginationComponent } from '@/components/pagination';
-import { statusOptions } from '@/utils/constants';
+import { StatusOptionDto, statusOptions } from '@/utils/constants';
 import LoadingBodyBodyItemInfoComponent from '@/components/loadingTableBodyItem';
 import GlobalHelper from '@/admin/packages/utils/globalHelper';
+import toast from 'react-hot-toast';
+import { AddCourtTypeDialog } from './components/createCourtTypeDialog';
 
 export interface CourtTypeDto {
     id: string;
     courtName: string;
     location: string;
     isActive: boolean;
-    status: "Available" | "Maintenance" | "Occupied";                    // e.g. "ACTIVE", "INACTIVE", "MAINTENANCE"
+    status: "Available" | "Maintenance" | "Occupied"  | "Booked";                    // e.g. "ACTIVE", "INACTIVE", "MAINTENANCE"
     createdAt: Date;
     updatedAt: Date;
     typeName: string;
@@ -51,9 +63,44 @@ export interface CourtTypeDto {
     ownerFullName: string;
     ownerRole: "Staff" | "Owner" | "Customer";
 }
+const courtTypeDtosDemo: CourtTypeDto[] = [
+  {
+    id: "ct-001",
+    courtName: "Vientiane Indoor Arena",
+    location: "ບ້ານ ສີຄອດຕະບອງ, ເຂດສີຄອດຕະບອງ, ນະຄອນຫຼວງວຽງຈັນ",
+    isActive: true,
+    status: "Available",
+    createdAt: new Date("2025-12-01"),
+    updatedAt: new Date("2026-05-20"),
+    typeName: "1v1 ດ່ຽວ",
+    description: "ເດິ່ນບານກະບຸ້ງໃນຫ້ອງມາດຕະຖານ, ມີແສງສະຫວ່າງ LED ແລະ ລະບົບອາກາດ",
+    hourlyRate: 150000,
+    ownerFullName: "ທ່ານ ສົມສັກ ພັນທະສິດ",
+    ownerRole: "Owner",
+  },
+  {
+    id: "ct-002",
+    courtName: "Green Field Outdoor Court",
+    location: "ໃກ້ທາດຫລວງ, ເຂດສາຍເສດຖາ, ນະຄອນຫຼວງວຽງຈັນ",
+    isActive: true,
+    status: "Available",
+    createdAt: new Date("2025-11-15"),
+    updatedAt: new Date("2026-05-21"),
+    typeName: "2v2 ຄູ່",
+    description: "ເດິ່ນບານກະບຸ້ງ buit ຂະໜາດເຕັມ, ເໝາະສຳລັບການຫຼິ້ນກັບໝູ່",
+    hourlyRate: 80000,
+    ownerFullName: "ທ່ານ ບຸນມະລີ ສີສຸວັນ",
+    ownerRole: "Owner",
+  }
+];
+
+type StatusDto = "Active" | "InActive";
 
 function CourtTypePage() {
-    const [courtTypes, setCourtTypes] = useState<CourtTypeDto[]>([]);
+    const [openAddCourtDialog, setOpenAddCourtDialog] = React.useState(false);
+    const [courtTypes, setCourtTypes] = useState<CourtTypeDto[]>(courtTypeDtosDemo);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statuses, setStatuses] = useState("Active" as StatusDto);
     const [filter, setFilter] = useState({
         page: 1,
         limit: 20
@@ -75,15 +122,41 @@ function CourtTypePage() {
         keepPreviousData: true, // smooth page transition
     });
 
-    useEffect(() => {
-        if (response) {
-            const result = response?.data;
-            const courtTypeInfos: CourtTypeDto[] = result?.data ?? []; // the array
-            const pagination: PaginationFilterDto = result?.pagination; // pagination info
-            setCourtTypes(courtTypeInfos);
-            setPaginationFilter(pagination);
+    const searchQueryMutation = trpc.app.user.admin.master_data.courtType.searchQuery.useMutation({
+        onSuccess: (data: ServerResponseDto) => {
+            if (data && data.success) {
+                const result = data?.data;
+                const searchQueryPagination = result?.pagination;
+                const searchQueryData = result?.data;
+                if (searchQueryData && searchQueryPagination) {
+                    setCourtTypes([...searchQueryData]);
+                    setPaginationFilter(searchQueryPagination);
+                }
+            }
+        },
+        onError: (error: Error) => {
+            toast.error(error.message);
         }
-    }, [response]);
+    });
+
+    const handleSearchQuery = () => {
+        searchQueryMutation.mutate({
+            ...filter,
+            query: searchQuery.trim() ?? "",
+            isActive: statuses
+        })
+    }
+
+    // useEffect(() => {
+    //     if (response) {
+    //         const result = response?.data;
+    //         const courtTypeInfos: CourtTypeDto[] = result?.data ?? []; // the array
+    //         const pagination: PaginationFilterDto = result?.pagination; // pagination info
+    //         setCourtTypes(courtTypeInfos);
+    //         setPaginationFilter(pagination);
+    //     }
+    // }, [response]);
+    
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -91,11 +164,7 @@ function CourtTypePage() {
                     <h1 className="text-3xl! font-bold">ການຄຸ້ມຄອງປະເພດເດິ່ນ</h1>
                     <p className="text-muted-foreground">ຈັດການປະເພດເດິ່ນ ແລະ ສະຖານະຕ່າງໆ</p>
                 </div>
-                <div>
-                    <Button type='button' variant="default" className="cursor-pointer">
-                        + ເພີ່ມປະເພດເດິ່ນ
-                    </Button>
-                </div>
+                <AddCourtTypeDialog open={openAddCourtDialog} setOpen={setOpenAddCourtDialog} refresh={refetch}/>
             </div>
 
             {/* === Filters Card === */}
@@ -113,9 +182,27 @@ function CourtTypePage() {
                             <Input
                                 placeholder="ຄົ້ນຫາປະເພດເດິ່ນ..."
                                 className="pl-10"
+                                onChange={e => setSearchQuery(e.target.value.trim())}
+                                onInput={e => {
+                                    const value = (e.target as HTMLInputElement).value.toLowerCase()
+                                    if (!value) {
+                                        refetch();
+                                        return;
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleSearchQuery();
+                                }}
                             />
                         </div>
-                        <Select>
+                        <Select value={statuses} onValueChange={(s: StatusOptionDto['value']) => {
+                            setStatuses(s);
+                            searchQueryMutation.mutate({
+                                ...filter,
+                                query: searchQuery.trim() ?? "",
+                                isActive: s
+                            });
+                        }}>
                             <SelectTrigger className='w-full sm:w-40'>
                                 <SelectValue placeholder="ສະຖານະ" />
                             </SelectTrigger>
@@ -132,7 +219,11 @@ function CourtTypePage() {
 
                         {/* Actions */}
                         <div className="flex gap-2">
-                            <Button onClick={refetch} disabled={isRefetching} className="cursor-pointer">
+                            <Button onClick={() => {
+                                refetch();
+                                setSearchQuery("");
+                                setStatuses("Active");
+                            }} disabled={isRefetching} className="cursor-pointer">
                                 {
                                     isRefetching ?
                                         <>
@@ -158,18 +249,18 @@ function CourtTypePage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>ລະຫັດ</TableHead>
+                                    <TableHead>ລໍາດັບ</TableHead>
                                     <TableHead>ຊື່ປະເພດ</TableHead>
                                     <TableHead>ສະຖານະ</TableHead>
-                                    <TableHead>ລາຍລະອຽດ</TableHead>
+                                    {/* <TableHead>ລາຍລະອຽດ</TableHead> */}
                                     <TableHead>ອັດຕາຕໍ່ຊົ່ວໂມງ</TableHead>
                                     <TableHead>ວັນທີສ້າງ</TableHead>
-                                    <TableHead className='flex justify-end items-center'>ຕົວເລືອກຕ່າງໆ</TableHead>
+                                    <TableHead className='flex justify-end items-center'>ຈັດການ</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {
-                                    isLoading ?
+                                    (isLoading || isRefetching) ?
                                         <TableRow>
                                             <TableCell colSpan={7}>
                                                 <LoadingBodyBodyItemInfoComponent />
@@ -184,11 +275,11 @@ function CourtTypePage() {
                                                 <TableCell>
                                                     <Badge variant={"default"}>ເຄື່ອນໄຫວ</Badge>
                                                 </TableCell>
-                                                <TableCell>
+                                                {/* <TableCell>
                                                     {
                                                         court.description
                                                     }
-                                                </TableCell>
+                                                </TableCell> */}
                                                 <TableCell>
                                                     <Badge variant={"secondary"}>
                                                         {court.hourlyRate}
@@ -234,7 +325,7 @@ function CourtTypePage() {
                                         )) :
                                             <TableRow>
                                                 <TableCell colSpan={7} className="text-center text-muted-foreground">
-                                                    ບໍ່ພົບເຈົ້າຂອງເດິ່ນ
+                                                    ບໍ່ມີຂໍ້ມູນ
                                                 </TableCell>
                                             </TableRow>
                                 }
