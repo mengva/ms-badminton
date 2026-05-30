@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { ZodValidationSendOTPToEmail, ZodValidationServerResetPassword, ZodValidationSignIn, ZodValidationSignInOTP } from "@/server/packages/validations";
 import { MyContext } from "@/server/server/trpc/context";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { redis } from "@/server/lib/redis";
 import { MailServices } from "@/server/lib/mail";
 import { ServerResponseDto, UserRoleDto } from "@/server/packages/types";
@@ -37,7 +37,8 @@ export class tRPCAuthServices {
             const userInfo = await db.query.users.findFirst({
                 where: (users, { eq, and }) => and(
                     eq(users.email, info.email),
-                    eq(users.isActive, true)
+                    eq(users.isActive, true),
+                    inArray(users.role, ["Owner", "Staff"])
                 ),
                 with: {
                     credentials: true
@@ -81,6 +82,11 @@ export class tRPCAuthServices {
             const token = await Helper.generateToken(userPayload);
 
             ctx.setCookie(tokenName, token, Helper.cookieOption);
+
+            ctx.userInfo = {
+                userId: userInfo.id,
+                role: userInfo.role as UserRoleDto
+            }
 
             return HandlerSuccess.success("Sign in successful");
         } catch (error) {

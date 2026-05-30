@@ -8,7 +8,7 @@ import { columns } from "./components/columns";
 // app/admin/reports/demo-data.ts
 export const demoStaffs = [
     {
-        id: "1",
+        id: "0001",
         fullName: "ທ. ອະນຸສອນ ສີສະຫວັດ",
         phoneNumber: "020 5555 1234",
         position: "ຜູ້ຈັດການເດີ່ນ",
@@ -17,7 +17,7 @@ export const demoStaffs = [
         createdAt: "2025-01-15",
     },
     {
-        id: "2",
+        id: "0002",
         fullName: "ນ. ສຸລິຍາ ບຸນມະນີ",
         phoneNumber: "020 9876 5432",
         position: "ເຈົ້າໜ້າທີ່ບັນຊີ",
@@ -26,7 +26,7 @@ export const demoStaffs = [
         createdAt: "2025-02-01",
     },
     {
-        id: "3",
+        id: "0003",
         fullName: "ທ. ວິລະພອນ ສຸກສະຫວັນ",
         phoneNumber: "020 1122 3344",
         position: "ພະນັກງານບໍລິການ",

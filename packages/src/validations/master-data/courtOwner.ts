@@ -1,8 +1,8 @@
 import z from "zod";
-import { zodValidationEmail, zodValidationFullName, zodValidationPassword, zodValidationPhoneNumber } from "../variables";
-import { zodValidationAddress, zodValidationCompanyName } from "./variable";
+import { zodValidationEmail, zodValidationFilter, zodValidationFullName, zodValidationPassword, zodValidationPhoneNumber, zodValidationQuery } from "../variables";
+import { zodValidationAddress, zodValidationCompanyName, zodValidationStaffIsActive } from "./variable";
 
-export const zodValidationAddCourtOwner = z.object({
+export const zodValidationCreateCourtOwner = z.object({
     fullName: zodValidationFullName,
     email: zodValidationEmail,
     phoneNumber: zodValidationPhoneNumber,
@@ -11,4 +11,10 @@ export const zodValidationAddCourtOwner = z.object({
     address: zodValidationAddress
 });
 
-export type ZodValidationAddCourtOwner = z.infer<typeof zodValidationAddCourtOwner>;
+export const zodValidationSearchQueryCourtOwner = zodValidationFilter.extend({
+    query: zodValidationQuery,
+    isActive: zodValidationStaffIsActive
+})
+
+export type ZodValidationSearchQueryCourtOwner = z.infer<typeof zodValidationSearchQueryCourtOwner>;
+export type ZodValidationCreateCourtOwner = z.infer<typeof zodValidationCreateCourtOwner>;

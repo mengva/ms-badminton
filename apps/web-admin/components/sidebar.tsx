@@ -64,6 +64,7 @@ export default function SidebarPage() {
                             pathname === item.href ||
                             pathname.startsWith(item.href);
 
+
                         // ------------------------------
                         // MENU WITHOUT CHILDREN
                         // ------------------------------
@@ -92,7 +93,9 @@ export default function SidebarPage() {
                             <Collapsible
                                 key={item.name}
                                 open={openMenus[item.name]}
-                                onOpenChange={() => toggleMenu(item.name)}
+                                onOpenChange={() => {
+                                    toggleMenu(item.name);
+                                }}
                             >
                                 <CollapsibleTrigger asChild>
                                     <button

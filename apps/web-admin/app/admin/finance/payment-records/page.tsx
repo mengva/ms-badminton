@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { Search, Eye, Printer, Download } from "lucide-react";
+import { Search, Eye, Printer, Download, RotateCw } from "lucide-react";
 
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -30,6 +30,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@workspace/ui/components/select";
+import { cn } from "@workspace/ui/lib/utils";
 
 interface PaymentRecord {
     id: string;
@@ -37,8 +38,8 @@ interface PaymentRecord {
     bookingId?: string;
     customerName: string;
     amount: number;
-    paymentType: string;
-    paymentMethod: string;
+    paymentType: "Deposit" | "Full" | "Remaining" | "Refund";
+    paymentMethod: "Cash" | "Bank Transfer" | "QR Code" | "Card";
     paymentStatus: "Paid" | "Pending" | "Failed";
     paymentDate: Date;
     staffName: string;
@@ -53,7 +54,7 @@ export default function PaymentRecordsPage() {
     const [records] = useState<PaymentRecord[]>([
         {
             id: "1",
-            paymentId: "PAY-20250514001",
+            paymentId: "PAY-20250514-001",
             bookingId: "BK-20250514-001",
             customerName: "ທ. ສົມສັກ ວິລະສັກ",
             amount: 400000,
@@ -66,7 +67,7 @@ export default function PaymentRecordsPage() {
         },
         {
             id: "2",
-            paymentId: "PAY-20250514002",
+            paymentId: "PAY-20250514-002",
             bookingId: "BK-20250514-002",
             customerName: "ນ. ອີນທະວົງ ບຸນມະນີ",
             amount: 300000,
@@ -79,7 +80,8 @@ export default function PaymentRecordsPage() {
         },
         {
             id: "3",
-            paymentId: "PAY-20250514003",
+            paymentId: "PAY-20250514-003",
+            bookingId: "BK-20250514-003",
             customerName: "ທ. ວິໄລ ສຸກສະຫວັນ",
             amount: 150000,
             paymentType: "Remaining",
@@ -116,23 +118,25 @@ export default function PaymentRecordsPage() {
                 </CardHeader>
                 <CardContent>
                     {/* Filters */}
-                    <div className="flex flex-col md:flex-row gap-4 mb-6">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="ຄົ້ນຫາ Payment ID, Booking ID, ຊື່ລູກຄ້າ..."
-                                className="pl-10"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                    <div className="flex flex-col lg:flex-row gap-4">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="flex-1 relative sm:w-80">
+                                <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="ຄົ້ນຫາ Payment ID, Booking ID, ຊື່ລູກຄ້າ..."
+                                    className="pl-10"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value.trim())}
+                                />
+                            </div>
                         </div>
 
                         <Select value={typeFilter} onValueChange={setTypeFilter}>
-                            <SelectTrigger className="w-48">
+                            <SelectTrigger className="lg:w-40 w-full">
                                 <SelectValue placeholder="ປະເພດການຈ່າຍ" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">ທັງໝົດ</SelectItem>
+                                <SelectItem value="all">ປະເພດການຈ່າຍທັງໝົດ</SelectItem>
                                 <SelectItem value="Deposit">ເງິນມັດຈຳ</SelectItem>
                                 <SelectItem value="Full">ຊຳລະເຕັມ</SelectItem>
                                 <SelectItem value="Remaining">ຊຳລະຍ້ອງ</SelectItem>
@@ -141,24 +145,34 @@ export default function PaymentRecordsPage() {
                         </Select>
 
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-40">
+                            <SelectTrigger className="lg:w-40 w-full">
                                 <SelectValue placeholder="ສະຖານະ" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">ທັງໝົດ</SelectItem>
+                                <SelectItem value="all">ການຊຳລະທັງໝົດ</SelectItem>
                                 <SelectItem value="Paid">ຊຳລະແລ້ວ</SelectItem>
                                 <SelectItem value="Pending">ຄ້າງຊຳລະ</SelectItem>
                             </SelectContent>
                         </Select>
+                        {/* Actions */}
+                        <Button className="cursor-pointer">
+                            <RotateCw className={cn("mr-2 h-4 w-4")} />
+                            ໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                        </Button>
                     </div>
+                </CardContent>
+            </Card>
 
+            <Card>
+                <CardContent>
                     {/* Table */}
                     <div className="rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Payment ID</TableHead>
-                                    <TableHead>Booking ID</TableHead>
+                                    <TableHead>ລໍາດັບ</TableHead>
+                                    <TableHead>ລະຫັດການຈ່າຍເງິນ</TableHead>
+                                    <TableHead>ລະຫັດການຈອງ</TableHead>
                                     <TableHead>ລູກຄ້າ</TableHead>
                                     <TableHead>ປະເພດ</TableHead>
                                     <TableHead>ວິທີຊຳລະ</TableHead>
@@ -166,12 +180,13 @@ export default function PaymentRecordsPage() {
                                     <TableHead>ວັນທີ</TableHead>
                                     <TableHead>ພະນັກງານ</TableHead>
                                     <TableHead>ສະຖານະ</TableHead>
-                                    <TableHead className="text-center">ຈັດການ</TableHead>
+                                    <TableHead className="text-right">ຕົວເລືອກ</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredRecords.map((record) => (
-                                    <TableRow key={record.id}>
+                                {filteredRecords.map((record, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell className="font-mono text-sm">{ (index + 1).toString().padStart(4, "0") }</TableCell>
                                         <TableCell className="font-medium">{record.paymentId}</TableCell>
                                         <TableCell>{record.bookingId || "-"}</TableCell>
                                         <TableCell>{record.customerName}</TableCell>
@@ -187,19 +202,17 @@ export default function PaymentRecordsPage() {
                                         </TableCell>
                                         <TableCell>{record.staffName}</TableCell>
                                         <TableCell>
-                                            <Badge className="bg-green-500">ຊຳລະແລ້ວ</Badge>
+                                            <Badge variant={"default"}>ຊຳລະແລ້ວ</Badge>
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <div className="flex justify-center gap-2">
-                                                <Button variant="ghost" size="sm">
+                                            <div className="flex justify-end gap-2">
+                                                <Button variant="secondary" size="sm">
                                                     <Eye className="h-4 w-4" />
+                                                    ເບິ່ງລາຍລະອຽດ
                                                 </Button>
-                                                <Button variant="ghost" size="sm">
-                                                    <Printer className="h-4 w-4" />
-                                                </Button>
-                                                <Button variant="ghost" size="sm">
+                                                {/* <Button variant="ghost" size="sm">
                                                     <Download className="h-4 w-4" />
-                                                </Button>
+                                                </Button> */}
                                             </div>
                                         </TableCell>
                                     </TableRow>

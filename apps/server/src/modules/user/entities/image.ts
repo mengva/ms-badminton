@@ -7,7 +7,7 @@ import { courts } from "../../../modules/user/admin/manage/court/entities";
 // ==================== 3. User Images ====================
 export const images = pgTable("images", {
     id: uuid("id").defaultRandom().primaryKey(),
-    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
     courtId: uuid("court_id").references(() => courts.id, { onDelete: "cascade" }),
     url: text("url").notNull(),
     imageKey: text("image_key").notNull(),

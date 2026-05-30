@@ -6,7 +6,7 @@ import { columns } from "./components/columns";
 
 export const demoBookings = [
     {
-        id: "b1",
+        id: "0001",
         bookingDate: "2026-05-14",
         customerName: "ນ. ມະນີວັນ ສີສຸລິຍາ",
         courtName: "ເດີ່ນ A1",
@@ -18,7 +18,7 @@ export const demoBookings = [
         staffName: "ອະນຸສອນ ສີສະຫວັດ",
     },
     {
-        id: "b2",
+        id: "0002",
         bookingDate: "2026-05-15",
         customerName: "ທ. ສົມສັກ ບຸນບັງ",
         courtName: "ເດີ່ນ B2",

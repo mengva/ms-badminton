@@ -6,7 +6,7 @@ import { columns } from "./components/columns";
 
 export const demoCourts = [
     {
-        id: "c1",
+        id: "0001",
         courtName: "ເດີ່ນ A1",
         typeName: "Futsal",
         hourlyRate: 150000,
@@ -15,7 +15,7 @@ export const demoCourts = [
         ownerName: "ບໍລິສັດ ສະຫວັນເດີ່ນ",
     },
     {
-        id: "c2",
+        id: "0002",
         courtName: "ເດີ່ນ B2",
         typeName: "Basketball",
         hourlyRate: 120000,
@@ -24,7 +24,7 @@ export const demoCourts = [
         ownerName: "ບໍລິສັດ ສະຫວັນເດີ່ນ",
     },
     {
-        id: "c3",
+        id: "0003",
         courtName: "ເດີ່ນ C3",
         typeName: "Badminton",
         hourlyRate: 80000,

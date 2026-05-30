@@ -6,7 +6,7 @@ import { columns } from "./components/columns";
 
 export const demoPayments = [
     {
-        id: "p1",
+        id: "0001",
         bookingId: "b1",
         customerName: "ນ. ມະນີວັນ ສີສຸລິຍາ",
         amount: 300000,
@@ -17,7 +17,7 @@ export const demoPayments = [
         referenceNumber: "PAY-20260514001",
     },
     {
-        id: "p2",
+        id: "0002",
         bookingId: "b2",
         customerName: "ທ. ສົມສັກ ບຸນບັງ",
         amount: 120000,

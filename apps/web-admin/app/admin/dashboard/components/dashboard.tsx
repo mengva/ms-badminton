@@ -159,7 +159,7 @@ function ChartTooltip({ active, payload, label }: any) {
 // ─────────────────────────────────────────
 // Dashboard Page
 // ─────────────────────────────────────────
-export default function DashboardPage() {
+export default function DashboardComponent() {
     const today = new Date().toLocaleDateString("lo-LA", {
         weekday: "long", year: "numeric", month: "long", day: "numeric",
     });

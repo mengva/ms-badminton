@@ -137,11 +137,17 @@ export default function PrintBillPage() {
                         </div>
 
                         <div className="flex justify-between text-lg">
-                            <span className="text-muted-foreground">ຈ່າຍມາແລ້ວ</span>
+                            <span className="text-muted-foreground">ຄ່າຈອງຈ່າຍມາແລ້ວ</span>
                             <span>{billData.paidAmount.toLocaleString()} ກີບ</span>
                         </div>
+{/* 
+                         <div className="flex justify-between text-lg">
+                            <span className="text-muted-foreground">ຄ່າເດິ່ນຈ່າຍມາແລ້ວ</span>
+                            <span>{billData.paidAmount.toLocaleString()} ກີບ</span>
+                        </div> */}
 
-                        <div className="flex justify-between text-xl font-semibold text-green-600 bg-green-50 p-4 rounded-lg">
+
+                        <div className="flex justify-between text-xl font-semibold text-green-600 bg-green-600/10 p-4 rounded-lg">
                             <span>ຍັງຕ້ອງຈ່າຍ</span>
                             <span>{billData.remainingAmount.toLocaleString()} ກີບ</span>
                         </div>

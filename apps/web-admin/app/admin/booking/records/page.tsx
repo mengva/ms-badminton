@@ -154,41 +154,64 @@ import { Badge } from "@workspace/ui/components/badge";
 //     },
 // ];
 
+type Booking = {
+    id: string;
+    customer: string;
+    court: string;
+    bookingDate: string;
+    startTime: string;
+    endTime: string;
+    totalHours: number;
+    depositAmount: number;
+    totalAmount: number;
+    status: "Pending" | "Confirmed" | "Completed";
+    paymentType: "Deposit" | "Full"
+};
 
 // =====================================================
 // 3. BOOKING RECORDS PAGE
 // FILE: app/admin/booking/records/page.tsx
 // =====================================================
 
-const bookingRecords = [
+const bookingRecords: Booking[] = [
     {
-        id: "BK-001",
-        customer: "John Doe",
-        court: "Court A",
+        id: "BK-20260513-8921",
+        customer: "ຈອນ ໂດ",
+        court: "ເດີ່ນ A",
         bookingDate: "2026-05-12",
-        time: "08:00 - 10:00",
-        total: "$20",
+        startTime: "08:00",
+        endTime: "10:00",
+        totalHours: 2,
+        depositAmount: 100000,
+        totalAmount: 200000,
         status: "Confirmed",
+        paymentType: "Deposit"
     },
-
     {
-        id: "BK-002",
-        customer: "Alex",
-        court: "Court B",
+        id: "BK-20260513-8922",
+        customer: "ອາເລັກ",
+        court: "ເດີ່ນ B",
+        bookingDate: "2026-05-12",
+        startTime: "13:00",
+        endTime: "15:00",
+        totalHours: 2,
+        depositAmount: 150000,
+        totalAmount: 300000,
+        status: "Confirmed",
+        paymentType: "Deposit"
+    },
+    {
+        id: "BK-20260513-8923",
+        customer: "ເດວິດ",
+        court: "ເດີ່ນ C",
         bookingDate: "2026-05-13",
-        time: "09:00 - 11:00",
-        total: "$40",
+        startTime: "18:00",
+        endTime: "20:00",
+        totalHours: 2,
+        depositAmount: 75000,
+        totalAmount: 200000,
         status: "Confirmed",
-    },
-
-    {
-        id: "BK-003",
-        customer: "David",
-        court: "Court C",
-        bookingDate: "2026-05-14",
-        time: "14:00 - 16:00",
-        total: "$35",
-        status: "Confirmed",
+        paymentType: "Deposit"
     },
 ];
 
@@ -212,7 +235,7 @@ export default function BookingRecordsPage() {
 
             {/* Statistics */}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
                     <CardContent className="p-6">
                         <p className="text-sm text-muted-foreground">
@@ -248,7 +271,7 @@ export default function BookingRecordsPage() {
                         </h2>
                     </CardContent>
                 </Card>
-            </div>
+            </div> */}
 
             {/* Table */}
 
@@ -292,46 +315,55 @@ export default function BookingRecordsPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead>ລໍາດັບ</TableHead>
                                     <TableHead>
-                                        Booking ID
+                                        ລະຫັດການຈອງ
                                     </TableHead>
 
                                     <TableHead>
-                                        Customer
+                                        ລູກຄ້າ
                                     </TableHead>
 
                                     <TableHead>
-                                        Court
+                                        ເດີ່ນ
                                     </TableHead>
 
                                     <TableHead>
-                                        Date
+                                        ວັນທີ
                                     </TableHead>
 
                                     <TableHead>
-                                        Time
+                                        ເວລາ
                                     </TableHead>
 
                                     <TableHead>
-                                        Total
+                                        ຊົ່ວໂມງ
+                                        </TableHead>
+
+                                    <TableHead>
+                                        ຈຳນວນເງິນມັດຈຳເດີ່ນ
+                                    </TableHead>
+                                    <TableHead>
+                                        ຄ່າເດີ່ນທັງໝົດ
                                     </TableHead>
 
                                     <TableHead>
-                                        Status
+                                        ສະຖານະ
                                     </TableHead>
 
                                     <TableHead className="text-right">
-                                        Action
+                                        ຕົວເລືອກ
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
 
                             <TableBody>
                                 {bookingRecords.map(
-                                    (booking) => (
+                                    (booking, index) => (
                                         <TableRow
-                                            key={booking.id}
+                                            key={index}
                                         >
+                                            <TableCell>{(index + 1).toString().padStart(4, "0")}</TableCell>
                                             <TableCell className="font-medium">
                                                 {booking.id}
                                             </TableCell>
@@ -353,70 +385,40 @@ export default function BookingRecordsPage() {
                                             </TableCell>
 
                                             <TableCell>
-                                                {booking.time}
+                                                {`${booking.startTime} - ${booking.endTime}`}
                                             </TableCell>
 
                                             <TableCell>
-                                                {booking.total}
+                                                {booking.totalHours}
+                                            </TableCell>
+
+                                            <TableCell>
+                                                {booking.depositAmount}ກີບ
+                                            </TableCell>
+
+                                            <TableCell>
+                                                {booking.totalAmount}ກີບ
                                             </TableCell>
 
                                             <TableCell>
                                                 <Badge
                                                     variant={"info"}
                                                 >
-                                                    {booking.status}
+                                                    {booking.status === "Confirmed" && "ຢືນຢັນແລ້ວ"}
                                                 </Badge>
                                             </TableCell>
 
                                             <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon">
-                                                            <MoreHorizontal className="size-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem className="cursor-pointer">
-                                                            <Eye className="mr-2 size-4" />
-                                                            ເບິ່ງ
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                <Button variant={"secondary"}>
+                                                    <Eye className="mr-2 size-4" />
+                                                            ເບິ່ງລາຍລະອຽດ
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
                                     )
                                 )}
                             </TableBody>
                         </Table>
-                    </div>
-
-                    {/* Footer */}
-
-                    <div className="flex items-center justify-between mt-6">
-                        <p className="text-sm text-muted-foreground">
-                            Showing 1 to 3 of 3
-                            records
-                        </p>
-
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                            >
-                                Previous
-                            </Button>
-
-                            <Button size="sm">
-                                1
-                            </Button>
-
-                            <Button
-                                variant="outline"
-                                size="sm"
-                            >
-                                Next
-                            </Button>
-                        </div>
                     </div>
                 </CardContent>
             </Card>

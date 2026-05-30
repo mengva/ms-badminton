@@ -1,32 +1,28 @@
-import { ZodValidationAddStaff, zodValidationAddStaff } from '@/admin/packages/validations/master-data';
-import { ZodValidationAddCourtOwner, zodValidationAddCourtOwner } from '@/admin/packages/validations/master-data';
+import { ZodValidationCreateCourtOwner, zodValidationCreateCourtOwner } from '@/admin/packages/validations/master-data';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@workspace/ui/components/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@workspace/ui/components/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@workspace/ui/components/form';
 import { Input } from '@workspace/ui/components/input';
-import { Label } from '@workspace/ui/components/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@workspace/ui/components/select';
 import { AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-
-interface AddCourtOwnerDialogDto {
+interface CreateCourtOwnerDialogDto {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function AddCourtOwnerDialogComponent({
+function CreateCourtOwnerDialogComponent({
     open, setOpen
-}: AddCourtOwnerDialogDto) {
+}: CreateCourtOwnerDialogDto) {
 
     const router = useRouter();
 
     const [showConfirmClose, setShowConfirmClose] = useState(false);
-    const form = useForm<ZodValidationAddCourtOwner>({
-        resolver: zodResolver(zodValidationAddCourtOwner),
+    const form = useForm<ZodValidationCreateCourtOwner>({
+        resolver: zodResolver(zodValidationCreateCourtOwner),
         defaultValues: {
             fullName: "",
             email: "",
@@ -73,8 +69,7 @@ function AddCourtOwnerDialogComponent({
     };
 
 
-
-    const onSubmit = (values: ZodValidationAddCourtOwner) => {
+    const onSubmit = (values: ZodValidationCreateCourtOwner) => {
 
     }
 
@@ -108,7 +103,7 @@ function AddCourtOwnerDialogComponent({
                             name="fullName"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>ຊື່-ນາມສະກຸນ</FormLabel>
+                                    <FormLabel>ຊື່-ນາມສະກຸນ <span className="text-red-500">*</span></FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="ຊື່-ນາມສະກຸນ"
@@ -125,7 +120,7 @@ function AddCourtOwnerDialogComponent({
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>ອີເມວ</FormLabel>
+                                    <FormLabel>ອີເມວ <span className="text-red-500">*</span></FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="you@example.com"
@@ -142,7 +137,7 @@ function AddCourtOwnerDialogComponent({
                             name="phoneNumber"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>ເບີໂທລະສັບ</FormLabel>
+                                    <FormLabel>ເບີໂທລະສັບ <span className="text-red-500">*</span></FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="ເບີໂທລະສັບ"
@@ -159,7 +154,7 @@ function AddCourtOwnerDialogComponent({
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>ລະຫັດຜ່ານ</FormLabel>
+                                    <FormLabel>ລະຫັດຜ່ານ <span className="text-red-500">*</span></FormLabel>
                                     <FormControl>
                                         <Input
                                             type="password"
@@ -194,7 +189,7 @@ function AddCourtOwnerDialogComponent({
                             name="address"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>ທີ່ຢູ່</FormLabel>
+                                    <FormLabel>ທີ່ຢູ່ <span className="text-red-500">*</span></FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="ທີ່ຢູ່"
@@ -206,11 +201,9 @@ function AddCourtOwnerDialogComponent({
                             )}
                         />
 
-                        <div>
-                            <Button type="submit" className="w-full cursor-pointer" variant="default">
-                                ເພີ່ມເຈົ້າຂອງເດິ່ນ
-                            </Button>
-                        </div>
+                        <Button type="submit" className="w-full cursor-pointer" variant="default">
+                            ເພີ່ມເຈົ້າຂອງເດິ່ນ
+                        </Button>
                     </form>
                 </Form>
             </DialogContent>
@@ -222,7 +215,7 @@ function AddCourtOwnerDialogComponent({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <AlertCircle className="h-5 w-5 text-destructive" />
-                       <div className='text-2xl font-bold'>ຍົກເລີກການປ່ຽນແປງບໍ?</div>
+                        <div className='text-2xl font-bold'>ຍົກເລີກການປ່ຽນແປງບໍ?</div>
                     </DialogTitle>
                     <DialogDescription>
                         ທ່ານມີການປ່ຽນແປງທີ່ຍັງບໍ່ໄດ້ບັນທຶກໄວ້. ຖ້າທ່ານປິດກ່ອງໂຕ້ຕອບນີ້, ການປ່ຽນແປງຂອງທ່ານຈະສູນຫາຍໄປ.
@@ -241,5 +234,5 @@ function AddCourtOwnerDialogComponent({
     </>
 }
 
-export default AddCourtOwnerDialogComponent;
+export default CreateCourtOwnerDialogComponent;
 

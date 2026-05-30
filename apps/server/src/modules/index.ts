@@ -16,7 +16,7 @@ import {
 import { relations } from "drizzle-orm";
 
 // ==================== Enums ====================
-export const courtStatusEnum = pgEnum("court_status", ["Available", "Maintenance", "Occupied"]);
+export const courtStatusEnum = pgEnum("court_status", ["Available", "Maintenance", "Occupied", "Booked"]);
 export const userRoleEnum = pgEnum("user_role", ["Staff", "Owner", "Customer"]);
 export const membershipTypeEnum = pgEnum("membership_type", ["Regular", "Member", "VIP"]);
 export const bookingStatusEnum = pgEnum("booking_status", ["Pending", "Confirmed", "Cancelled", "CheckedIn", "Completed"]);
@@ -24,7 +24,7 @@ export const paymentTypeEnum = pgEnum("payment_type", ["Deposit", "Full", "Remai
 export const paymentMethodEnum = pgEnum("payment_method", ["Cash", "Bank Transfer", "QR Code", "Card"]);
 export const imageTypeEnum = pgEnum("image_type", ["profile", "cover", "court", "other"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["Paid", "Pending", "Failed"]);
-export const invoiceStatusEnum = pgEnum("invoice_status", ["Unpaid", "PartiallyPaid", "Paid", "Cancelled"]);
+export const invoiceStatusEnum = pgEnum("invoice_status", ["Unpaid", "PartiallyPaid", "FullPaid", "Paid", "Cancelled"]);
 
 // ==================== 1. Users (Base Table) ====================
 export const users = pgTable("users", {
@@ -113,6 +113,7 @@ export const courtTypes = pgTable("court_types", {
     id: uuid("id").defaultRandom().primaryKey(),
     typeName: varchar("type_name", { length: 50 }).notNull().unique(),
     description: text("description"),
+    isActive: boolean("is_active").default(true).notNull(),
     hourlyRate: numeric("hourly_rate", { precision: 10, scale: 2 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
@@ -127,6 +128,7 @@ export const courts = pgTable("courts", {
     typeId: uuid("type_id").notNull().references(() => courtTypes.id, { onDelete: "cascade" }),
     courtName: varchar("court_name", { length: 100 }).notNull(),
     location: text("location"),
+    isActive: boolean("is_active").default(true).notNull(),
     status: courtStatusEnum("status").default("Available"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull().$onUpdateFn(() => new Date()),
@@ -140,6 +142,7 @@ export const courts = pgTable("courts", {
 // ==================== 9. Bookings ====================
 export const bookings = pgTable("bookings", {
     id: uuid("id").defaultRandom().primaryKey(),
+    bookingCode: varchar("booking_code", { length: 30 }).notNull().unique(),
     customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     cancelledById: uuid("cancelled_by_id").references(() => users.id, { onDelete: "cascade" }),
     courtId: uuid("court_id").notNull().references(() => courts.id, { onDelete: "cascade" }),
@@ -151,6 +154,7 @@ export const bookings = pgTable("bookings", {
     depositAmount: numeric("deposit_amount", { precision: 10, scale: 2 }).notNull().default("0.00"),
     totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull().default("0.00"),
     status: bookingStatusEnum("status").default("Pending"),
+    players: varchar("players").notNull().default("0"),
     cancelReason: text("cancel_reason"),
     cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -167,6 +171,7 @@ export const bookings = pgTable("bookings", {
 // ==================== 10. Check Ins ====================
 export const checkIns = pgTable("check_ins", {
     id: uuid("id").defaultRandom().primaryKey(),
+    checkInCode: varchar("check_in_code", { length: 30 }).notNull().unique(),
     bookingId: uuid("booking_id").notNull().unique().references(() => bookings.id, { onDelete: "cascade" }),
     staffId: uuid("staff_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -183,6 +188,7 @@ export const checkIns = pgTable("check_ins", {
 // ==================== 11. Check Outs ====================
 export const checkOuts = pgTable("check_outs", {
     id: uuid("id").defaultRandom().primaryKey(),
+    checkOutCode: varchar("check_out_code", { length: 30 }).notNull().unique(),
     bookingId: uuid("booking_id").notNull().unique().references(() => bookings.id, { onDelete: "cascade" }),
     staffId: uuid("staff_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -202,6 +208,7 @@ export const checkOuts = pgTable("check_outs", {
 // ==================== 12. Payments ====================
 export const payments = pgTable("payments", {
     id: uuid("id").defaultRandom().primaryKey(),
+    paymentCode: varchar("payment_code", { length: 30 }).notNull().unique(),
     bookingId: uuid("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
     customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     staffId: uuid("staff_id").references(() => users.id, { onDelete: "cascade" }),

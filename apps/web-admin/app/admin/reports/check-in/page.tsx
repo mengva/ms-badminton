@@ -6,7 +6,7 @@ import { columns } from "./components/columns";
 
 export const demoCheckIns = [
     {
-        id: "ci1",
+        id: "0001",
         bookingId: "b1",
         customerName: "ນ. ມະນີວັນ ສີສຸລິຍາ",
         courtName: "ເດີ່ນ A1",
@@ -15,7 +15,7 @@ export const demoCheckIns = [
         notes: "ມາຕາມເວລາ",
     },
     {
-        id: "ci2",
+        id: "0002",
         bookingId: "b2",
         customerName: "ທ. ສົມສັກ ບຸນບັງ",
         courtName: "ເດີ່ນ B2",

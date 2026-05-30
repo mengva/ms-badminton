@@ -7,7 +7,11 @@ import {
     Plus,
     Search,
     CreditCard,
-    Printer
+    Printer,
+    RotateCw,
+    MoreHorizontal,
+    Verified,
+    Eye
 } from "lucide-react";
 
 import { Button } from "@workspace/ui/components/button";
@@ -43,8 +47,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@workspace/ui/components/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
+import { cn } from "@workspace/ui/lib/utils";
 
 interface FieldPayment {
     id: string;
@@ -56,8 +62,11 @@ interface FieldPayment {
     endTime: string;
     hours: number;
     ratePerHour: number;
+    paidAmount: number;
     totalAmount: number;
-    paymentMethod: string;
+    remainingAmount: number;
+    paymentMethod: "Cash" | "Bank Transfer" | "QR Code" | "Card";
+    status: "Pending" | "PartiallyPaid" | "FullPaid" | "Paid" | "Cancelled";
     paymentStatus: "Paid" | "Pending" | "Failed";
     notes?: string;
 }
@@ -80,8 +89,11 @@ export default function FieldPaymentPage() {
             endTime: "17:30",
             hours: 2,
             ratePerHour: 150000,
-            totalAmount: 300000,
             paymentMethod: "Cash",
+            totalAmount: 400000,
+            paidAmount: 100000,
+            remainingAmount: 300000,
+            status: "FullPaid",
             paymentStatus: "Paid",
             notes: "ລູກຄ້າປົກກະຕິ",
         },
@@ -95,7 +107,10 @@ export default function FieldPaymentPage() {
             endTime: "20:00",
             hours: 2,
             ratePerHour: 200000,
-            totalAmount: 400000,
+            totalAmount: 300000,
+            paidAmount: 300000,
+            remainingAmount: 0,
+            status: "FullPaid",
             paymentMethod: "QR Code",
             paymentStatus: "Paid",
         },
@@ -109,7 +124,10 @@ export default function FieldPaymentPage() {
             endTime: "11:30",
             hours: 1.5,
             ratePerHour: 180000,
-            totalAmount: 270000,
+            totalAmount: 450000,
+            paidAmount: 150000,
+            remainingAmount: 0,
+            status: "PartiallyPaid",
             paymentMethod: "Cash",
             paymentStatus: "Paid",
         },
@@ -137,7 +155,22 @@ export default function FieldPaymentPage() {
     };
 
     const getStatusBadge = (status: string) => {
-        if (status === "Paid") return <Badge className="bg-green-500">ຊຳລະແລ້ວ</Badge>;
+        switch (status) {
+            case "Paid":
+                return <Badge variant={"default"}>ຊຳລະສຳເລັດ</Badge>;
+            case "FullPaid":
+                return <Badge variant={"info"}>ຈ່າຍເຕັມແລ້ວ</Badge>;
+            case "PartiallyPaid":
+                return <Badge variant="secondary">ຊຳລະບາງສ່ວນ</Badge>;
+            case "Pending":
+                return <Badge variant="destructive">ຄ້າງຊຳລະ</Badge>;
+            default:
+                return <Badge variant="outline">{status}</Badge>;
+        }
+    };
+
+    const getPaymentStatusBadge = (status: string) => {
+        if (status === "Paid") return <Badge variant={"default"}>ຊຳລະແລ້ວ</Badge>;
         if (status === "Pending") return <Badge variant="destructive">ຄ້າງຊຳລະ</Badge>;
         return <Badge variant="outline">{status}</Badge>;
     };
@@ -149,10 +182,10 @@ export default function FieldPaymentPage() {
                     <h1 className="text-3xl font-bold">ຊຳລະຄ່າເດີ່ນ</h1>
                     <p className="text-muted-foreground">ບັນທຶກການຊຳລະຄ່າໃຊ້ເດີ່ນ (Walk-in / ຊຳລະທັນທີ)</p>
                 </div>
-                <Button onClick={() => alert("ເປີດຟອມບັນທຶກການໃຊ້ເດີ່ນໃໝ່")}>
+                {/* <Button onClick={() => alert("ເປີດຟອມບັນທຶກການໃຊ້ເດີ່ນໃໝ່")}>
                     <Plus className="mr-2 h-4 w-4" />
                     ບັນທຶກການໃຊ້ເດີ່ນໃໝ່
-                </Button>
+                </Button> */}
             </div>
 
             <Card>
@@ -162,8 +195,8 @@ export default function FieldPaymentPage() {
                 </CardHeader>
                 <CardContent>
                     {/* Search & Filter */}
-                    <div className="flex flex-col md:flex-row gap-4 mb-6">
-                        <div className="flex-1 relative">
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <div className="relative sm:w-80">
                             <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="ຄົ້ນຫາ Transaction ID, ຊື່ລູກຄ້າ, ເດີ່ນ..."
@@ -174,7 +207,7 @@ export default function FieldPaymentPage() {
                         </div>
 
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-full md:w-52">
+                            <SelectTrigger className="w-full md:w-40">
                                 <SelectValue placeholder="ສະຖານະ" />
                             </SelectTrigger>
                             <SelectContent>
@@ -183,29 +216,44 @@ export default function FieldPaymentPage() {
                                 <SelectItem value="Pending">ຄ້າງຊຳລະ</SelectItem>
                             </SelectContent>
                         </Select>
+                        {/* Actions */}
+                        <Button className="cursor-pointer">
+                            <RotateCw className={cn("mr-2 h-4 w-4")} />
+                            ໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                        </Button>
                     </div>
+                </CardContent>
+            </Card>
 
+            <Card>
+                <CardContent>
                     {/* Table */}
                     <div className="rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Transaction ID</TableHead>
+                                    <TableHead>ລໍາດັບ</TableHead>
                                     <TableHead>ລູກຄ້າ</TableHead>
                                     <TableHead>ເດີ່ນ</TableHead>
                                     <TableHead>ວັນທີ / ເວລາ</TableHead>
-                                    <TableHead className="text-center">ຈຳນວນເວລາ</TableHead>
-                                    <TableHead className="text-right">ລາຄາຕໍ່ຊົ່ວໂມງ</TableHead>
-                                    <TableHead className="text-right">ລວມທັງໝົດ</TableHead>
-                                    <TableHead>ວິທີຊຳລະ</TableHead>
+                                    <TableHead>ຈຳນວນເວລາ</TableHead>
+                                    <TableHead>ລາຄາຕໍ່ຊົ່ວໂມງ</TableHead>
+                                    <TableHead>ຊຳລະຄ່າຈອງເເລ້ວ</TableHead>
+                                    <TableHead>ຈ່າຍຄ້າງຊຳລະມາເເລ້ວ</TableHead>
+                                    <TableHead>ລວມທັງໝົດ</TableHead>
                                     <TableHead>ສະຖານະ</TableHead>
+                                    <TableHead>ວິທີຊຳລະ</TableHead>
+                                    <TableHead>ສະຖານະການຊໍາລະ</TableHead>
                                     <TableHead className="text-center">ຈັດການ</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredPayments.map((payment) => (
-                                    <TableRow key={payment.id}>
-                                        <TableCell className="font-medium">{payment.transactionId}</TableCell>
+                                {filteredPayments.map((payment, index) => {
+                                    const isRemainingAmount = Boolean(((payment.paidAmount + payment.remainingAmount) - payment.totalAmount) === 0);
+                                    const remainingAmount = payment.totalAmount - payment.paidAmount;
+                                    return (
+                                        <TableRow key={index}>
+                                        <TableCell className="font-mono text-sm">{(index + 1).toString().padStart(4, "0")}</TableCell>
                                         <TableCell>{payment.customerName}</TableCell>
                                         <TableCell>{payment.courtName}</TableCell>
                                         <TableCell>
@@ -214,17 +262,29 @@ export default function FieldPaymentPage() {
                                                 {payment.startTime} - {payment.endTime}
                                             </span>
                                         </TableCell>
-                                        <TableCell className="text-center font-medium">{payment.hours} ຊມ.</TableCell>
-                                        <TableCell className="text-right">
-                                            {payment.ratePerHour.toLocaleString()} ຂ
+                                        <TableCell className="font-medium">{payment.hours} ຊມ.</TableCell>
+                                        <TableCell>
+                                            {payment.ratePerHour.toLocaleString()} ກິບ
                                         </TableCell>
-                                        <TableCell className="text-right font-semibold">
-                                            {payment.totalAmount.toLocaleString()} ຂ
+                                        <TableCell className="text-green-600">
+                                            {payment.paidAmount.toLocaleString()} ກິບ
                                         </TableCell>
+                                        <TableCell className={`font-medium ${isRemainingAmount ? 'text-blue-500' : 'text-red-500'}`}>
+                                            {
+                                                isRemainingAmount ? 
+                                                payment.remainingAmount.toLocaleString()
+                                                :
+                                                `-${remainingAmount.toLocaleString()}`
+                                            } ກິບ
+                                        </TableCell>
+                                        <TableCell className="font-semibold">
+                                            {payment.totalAmount.toLocaleString()} ກິບ
+                                        </TableCell>
+                                        <TableCell>{getStatusBadge(payment.status)}</TableCell>
                                         <TableCell>{payment.paymentMethod}</TableCell>
-                                        <TableCell>{getStatusBadge(payment.paymentStatus)}</TableCell>
+                                        <TableCell>{getPaymentStatusBadge(payment.paymentStatus)}</TableCell>
                                         <TableCell className="text-center space-x-2">
-                                            <Button
+                                            {/* <Button
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => openPaymentModal(payment)}
@@ -237,10 +297,34 @@ export default function FieldPaymentPage() {
                                                 onClick={() => alert(`ກຳລັງພິມໃບບິນ ${payment.transactionId}`)}
                                             >
                                                 <Printer className="h-4 w-4" />
-                                            </Button>
+                                            </Button> */}
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        disabled={payment.status !== "FullPaid"}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        <Verified />
+                                                        ຢືນຢັນຊຳລະເດິ່ນ
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="cursor-pointer"
+                                                    >
+                                                        <Eye className="mr-2 h-4 w-4" />
+                                                        ລາຍລະອຽດ
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                    )
+                                })}
                             </TableBody>
                         </Table>
                     </div>
@@ -274,7 +358,7 @@ export default function FieldPaymentPage() {
                         <div className="space-y-2">
                             <Label>ວິທີການຊຳລະ</Label>
                             <Select defaultValue={selectedPayment?.paymentMethod}>
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

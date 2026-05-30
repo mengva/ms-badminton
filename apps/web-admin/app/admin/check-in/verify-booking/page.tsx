@@ -1,84 +1,3 @@
-// // app/admin/check-in/verify-booking/page.tsx
-// import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
-// import { Input } from "@workspace/ui/components/input";
-// import { Button } from "@workspace/ui/components/button";
-// import { Badge } from "@workspace/ui/components/badge";
-// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table";
-// import { Search, User, Calendar, Clock } from "lucide-react";
-
-// export default function VerifyBookingPage() {
-//   return (
-//     <div className="space-y-6">
-//       <div className="flex justify-between items-center">
-//         <h2 className="text-3xl font-bold">ກວດສອບຂໍ້ມູນການຈອງ</h2>
-//       </div>
-
-//       {/* Search Bar */}
-//       <Card>
-//         <CardHeader>
-//           <CardTitle>ຄົ້ນຫາການຈອງ</CardTitle>
-//         </CardHeader>
-//         <CardContent>
-//           <div className="flex gap-3">
-//             <div className="flex-1">
-//               <Input placeholder="ປ້ອນລະຫັດການຈອງ / ເບີໂທ / ຊື່ລູກຄ້າ" className="text-lg" />
-//             </div>
-//             <Button size="lg">
-//               <Search className="mr-2" /> ຄົ້ນຫາ
-//             </Button>
-//           </div>
-//         </CardContent>
-//       </Card>
-
-//       {/* Booking Result */}
-//       <Card>
-//         <CardHeader>
-//           <CardTitle className="flex items-center gap-2">
-//             ຜົນການຄົ້ນຫາ
-//             <Badge variant="secondary">PENDING CHECK-IN</Badge>
-//           </CardTitle>
-//         </CardHeader>
-//         <CardContent>
-//           <Table>
-//             <TableHeader>
-//               <TableRow>
-//                 <TableHead>Booking ID</TableHead>
-//                 <TableHead>ລູກຄ້າ</TableHead>
-//                 <TableHead>ເດີ່ນ</TableHead>
-//                 <TableHead>ວັນທີ</TableHead>
-//                 <TableHead>ເວລາ</TableHead>
-//                 <TableHead>ສະຖານະ</TableHead>
-//                 <TableHead></TableHead>
-//               </TableRow>
-//             </TableHeader>
-//             <TableBody>
-//               <TableRow>
-//                 <TableCell className="font-mono">BK-20260513-7842</TableCell>
-//                 <TableCell>
-//                   <div className="flex items-center gap-2">
-//                     <User className="w-4 h-4" />
-//                     ທ. ສຸລິວົງ ສຸກສີ
-//                   </div>
-//                 </TableCell>
-//                 <TableCell>ເດີ່ນ A-01 (5v5)</TableCell>
-//                 <TableCell>13/05/2026</TableCell>
-//                 <TableCell>19:00 - 20:00</TableCell>
-//                 <TableCell>
-//                   <Badge variant="outline" className="text-green-600">ພ້ອມແລ້ວ</Badge>
-//                 </TableCell>
-//                 <TableCell>
-//                   <Button>ແຈ້ງເຂົ້າ</Button>
-//                 </TableCell>
-//               </TableRow>
-//             </TableBody>
-//           </Table>
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
-// }
-
-
 "use client";
 
 import { useState } from "react";
@@ -109,29 +28,69 @@ import {
     FiClock,
     FiCalendar,
     FiCheckCircle,
+    FiPrinter
 } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 
-const demoBooking = {
-    bookingCode: "BK-2026-0001",
-    customerName: "Meng",
-    phone: "020 9999 8888",
-    court: "Court A",
-    date: "13/05/2026",
-    time: "18:00 - 20:00",
-    players: 4,
-    status: "Confirmed",
-    paymentStatus: "Paid",
+type Booking = {
+    id: number;
+    bookingCode: string;
+    customerName: string;
+    phone: string;
+    court: string;
+    date: string;
+    time: string;
+    players: string;
+    status: "Pending" | "Confirmed" | "Completed";
+    paymentStatus: "Paid"
 };
+
+const demoBooking: Booking[] = [
+    {
+        id: 1,
+        bookingCode: "BK-20260513-8921",
+        customerName: "ຈອນ ໂດ",
+        phone: "020 9999 8888",
+        court: "ເດີ່ນ A",
+        date: "13/05/2026",
+        time: "18:00 - 20:00",
+        players: "4",
+        status: "Confirmed",
+        paymentStatus: "Paid",
+    },
+    {
+        id: 2,
+        bookingCode: "BK-20260513-8922",
+        customerName: "ອາເລັກ",
+        phone: "020 9999 8888",
+        court: "ເດີ່ນ B",
+        date: "13/05/2026",
+        time: "18:00 - 20:00",
+        players: "5",
+        status: "Confirmed",
+        paymentStatus: "Paid",
+    },
+    {
+        id: 3,
+        bookingCode: "BK-20260513-8923",
+        customerName: "ເດວິດ",
+        phone: "020 9999 8888",
+        court: "ເດີ່ນ C",
+        date: "13/05/2026",
+        time: "18:00 - 20:00",
+        players: "2",
+        status: "Confirmed",
+        paymentStatus: "Paid",
+    }
+];
 
 export default function VerifyBookingPage() {
     const [bookingCode, setBookingCode] = useState("");
-    const [booking, setBooking] = useState<any | null>(null);
+    const [bookings, setBookings] = useState<Booking[] | null>(demoBooking);
+    const router = useRouter();
 
     const handleVerifyBooking = () => {
         // Demo verify
-        if (bookingCode.trim() !== "") {
-            setBooking(demoBooking);
-        }
     };
 
     return (
@@ -180,148 +139,151 @@ export default function VerifyBookingPage() {
             </Card>
 
             {/* Booking Result */}
-            {booking && (
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle className="flex items-center gap-2">
-                                <FiCheckCircle className="text-green-600" />
-                                ພົບຂໍ້ມູນການຈອງ
-                            </CardTitle>
+            {bookings?.length && (
+                bookings.map((booking, index) => (
+                    <Card key={index}>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="flex items-center gap-2">
+                                    <FiCheckCircle className="text-green-600" />
+                                    ພົບຂໍ້ມູນການຈອງ
+                                </CardTitle>
 
-                            <CardDescription>
-                                ລາຍລະອຽດການຈອງຂອງລູກຄ້າ
-                            </CardDescription>
-                        </div>
-
-                        <Badge className="rounded-xl" variant={"default"}>
-                            {booking.status}
-                        </Badge>
-                    </CardHeader>
-
-                    <CardContent className="space-y-6">
-                        {/* Customer Info */}
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                            <div className="rounded-2xl border p-4">
-                                <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-                                    <FiUser />
-                                    <span>ລູກຄ້າ</span>
-                                </div>
-
-                                <p className="font-semibold">
-                                    {booking.customerName}
-                                </p>
+                                <CardDescription>
+                                    ລາຍລະອຽດການຈອງຂອງລູກຄ້າ
+                                </CardDescription>
                             </div>
 
-                            <div className="rounded-2xl border p-4">
-                                <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-                                    <FiPhone />
-                                    <span>ເບີໂທ</span>
+                            <Badge className="rounded-xl" variant={"info"}>
+                                {booking.status === "Confirmed" && "ຢືນຢັນແລ້ວ"}
+                            </Badge>
+                        </CardHeader>
+
+                        <CardContent className="space-y-6">
+                            {/* Customer Info */}
+                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                <div className="rounded-2xl border p-4">
+                                    <div className="mb-2 flex items-center gap-2 text-muted-foreground">
+                                        <FiUser />
+                                        <span>ລູກຄ້າ</span>
+                                    </div>
+
+                                    <p className="font-semibold">
+                                        {booking.customerName}
+                                    </p>
                                 </div>
 
-                                <p className="font-semibold">
-                                    {booking.phone}
-                                </p>
-                            </div>
+                                <div className="rounded-2xl border p-4">
+                                    <div className="mb-2 flex items-center gap-2 text-muted-foreground">
+                                        <FiPhone />
+                                        <span>ເບີໂທ</span>
+                                    </div>
 
-                            <div className="rounded-2xl border p-4">
-                                <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-                                    <FiCalendar />
-                                    <span>ວັນທີ</span>
+                                    <p className="font-semibold">
+                                        {booking.phone}
+                                    </p>
                                 </div>
 
-                                <p className="font-semibold">
-                                    {booking.date}
-                                </p>
-                            </div>
+                                <div className="rounded-2xl border p-4">
+                                    <div className="mb-2 flex items-center gap-2 text-muted-foreground">
+                                        <FiCalendar />
+                                        <span>ວັນທີ</span>
+                                    </div>
 
-                            <div className="rounded-2xl border p-4">
-                                <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-                                    <FiClock />
-                                    <span>ເວລາ</span>
+                                    <p className="font-semibold">
+                                        {booking.date}
+                                    </p>
                                 </div>
 
-                                <p className="font-semibold">
-                                    {booking.time}
-                                </p>
+                                <div className="rounded-2xl border p-4">
+                                    <div className="mb-2 flex items-center gap-2 text-muted-foreground">
+                                        <FiClock />
+                                        <span>ເວລາ</span>
+                                    </div>
+
+                                    <p className="font-semibold">
+                                        {booking.time}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
 
-                        <Separator />
+                            <Separator />
 
-                        {/* Booking Detail Table */}
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>
-                                        Booking Code
-                                    </TableHead>
+                            {/* Booking Detail Table */}
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>
+                                            ລະຫັດການຈອງ
+                                        </TableHead>
 
-                                    <TableHead>
-                                        Court
-                                    </TableHead>
+                                        <TableHead>
+                                         ເດີ່ນ
+                                        </TableHead>
 
-                                    <TableHead>
-                                        Players
-                                    </TableHead>
+                                        <TableHead>
+                                            ຜູ້ຫຼິ້ນ
+                                        </TableHead>
 
-                                    <TableHead>
-                                        Payment
-                                    </TableHead>
+                                        <TableHead>
+                                          ການຈ່າຍເງິນ
+                                        </TableHead>
 
-                                    <TableHead>
-                                        Status
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
+                                        <TableHead>
+                                            ສະຖານະ
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
 
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell className="font-medium">
-                                        {booking.bookingCode}
-                                    </TableCell>
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell className="font-medium">
+                                            {booking.bookingCode}
+                                        </TableCell>
 
-                                    <TableCell>
-                                        {booking.court}
-                                    </TableCell>
+                                        <TableCell>
+                                            {booking.court}
+                                        </TableCell>
 
-                                    <TableCell>
-                                        {booking.players} Players
-                                    </TableCell>
+                                        <TableCell>
+                                            {booking.players} ຄົນ
+                                        </TableCell>
 
-                                    <TableCell>
-                                        <Badge
-                                            variant="secondary"
-                                            className="rounded-xl"
-                                        >
-                                            {booking.paymentStatus}
-                                        </Badge>
-                                    </TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                variant="default"
+                                                className="rounded-xl"
+                                            >
+                                                {booking.paymentStatus === "Paid" && "ຈ່າຍແລ້ວ"}
+                                            </Badge>
+                                        </TableCell>
 
-                                    <TableCell>
-                                        <Badge className="rounded-xl" variant={"default"}>
-                                            {booking.status}
-                                        </Badge>
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
+                                        <TableCell>
+                                            <Badge className="rounded-xl" variant={"info"}>
+                                                {booking.status === "Confirmed" && "ຢືນຢັນແລ້ວ"}
+                                            </Badge>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
 
-                        {/* Actions */}
-                        <div className="flex flex-col gap-3 md:flex-row">
-                            <Button className="rounded-xl">
-                                Confirm Check-In
-                            </Button>
-
-                            <Button
-                                variant="outline"
-                                className="rounded-xl"
-                            >
-                                Print Booking
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                            {/* Actions */}
+                            <div className="flex flex-col gap-3 md:flex-row">
+                                <Button className="rounded-md">
+                                   ຢືນຢັນການເຊັກອິນ
+                                </Button>
+{/* 
+                                <Button
+                                    variant="outline"
+                                    className="rounded-xl"
+                                >
+                                    <FiPrinter/>
+                                   ພິມໃບຢືນຢັນການເເຈ້ງເຂົ້າ
+                                </Button> */}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))
             )}
         </div>
     );

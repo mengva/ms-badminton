@@ -30,7 +30,7 @@ export default function SignInPage() {
     const signInMutation = trpc.app.user.auth.signIn.useMutation({
         onSuccess: (data: ServerResponseDto) => {
             if (data?.success) {
-                toast.success(data.message || "Signed in successfully!");
+                toast.success(data.message);
                 router.push("/admin/dashboard");
             }
         },

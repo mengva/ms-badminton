@@ -71,12 +71,14 @@ type Booking = {
     status: "Pending" | "Confirmed" | "Cancelled";
 };
 
+type ChangeBookingStatus = "Confirmed" | "Cancelled";
+
 // ==================== MOCK DATA ====================
 const initialBookings: Booking[] = [
     {
-        id: "BK-001",
-        customer: "John Doe",
-        court: "Court A",
+        id: "BK-20260513-8921",
+        customer: "ຈອນ ໂດ",
+        court: "ເດີ່ນ A",
         bookingDate: "2026-05-12",
         startTime: "08:00",
         endTime: "10:00",
@@ -85,9 +87,9 @@ const initialBookings: Booking[] = [
         status: "Pending",
     },
     {
-        id: "BK-002",
-        customer: "Alex",
-        court: "Court B",
+        id: "BK-20260513-8922",
+        customer: "ອາເລັກ",
+        court: "ເດີ່ນ B",
         bookingDate: "2026-05-12",
         startTime: "13:00",
         endTime: "15:00",
@@ -96,9 +98,9 @@ const initialBookings: Booking[] = [
         status: "Pending",
     },
     {
-        id: "BK-003",
-        customer: "David",
-        court: "Court C",
+        id: "BK-20260513-8923",
+        customer: "ເດວິດ",
+        court: "ເດີ່ນ C",
         bookingDate: "2026-05-13",
         startTime: "18:00",
         endTime: "20:00",
@@ -112,30 +114,25 @@ export default function AdminBookingPage() {
     const [bookings, setBookings] = useState<Booking[]>(initialBookings);
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [newStatus, setNewStatus] = useState<Booking["status"]>("Pending");
+    const [newStatus, setNewStatus] = useState<ChangeBookingStatus>("Confirmed" as ChangeBookingStatus);
 
-    // Open Edit Dialog
     const handleEditClick = (booking: Booking) => {
         setSelectedBooking(booking);
-        setNewStatus(booking.status);
         setIsEditDialogOpen(true);
     };
 
-    // Save Status Change
     const handleSaveStatus = () => {
         if (!selectedBooking) return;
 
         setBookings((prev) =>
             prev.map((b) =>
                 b.id === selectedBooking.id ? { ...b, status: newStatus } : b
-            )
+            ).filter(b => b.status === "Pending")
         );
 
         setIsEditDialogOpen(false);
         setSelectedBooking(null);
-
-        // Optional: Show success message
-        alert(`Updated status to ${newStatus}`);
+        alert(`ອັບເດດສະຖານະເປັນ ${newStatus}`);
     };
 
     return (
@@ -147,7 +144,7 @@ export default function AdminBookingPage() {
                         ການຈອງທັງໝົດ
                     </h1>
                     <p className="text-muted-foreground">
-                        ການຈອງສະໜາມ MS.Badminton ທັງໝົດ.
+                        ການຈອງສະໜາມ MS.Badminton ທັງໝົດ
                     </p>
                 </div>
             </div>
@@ -158,7 +155,7 @@ export default function AdminBookingPage() {
                     <CardContent className="p-6 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-muted-foreground">ການຈອງທັງໝົດ</p>
-                            <h2 className="text-3xl font-bold mt-2">120</h2>
+                            <h2 className="text-3xl font-bold mt-2">12</h2>
                         </div>
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                             <CalendarCheck2 className="size-6 text-primary" />
@@ -169,14 +166,14 @@ export default function AdminBookingPage() {
                 <Card>
                     <CardContent className="p-6">
                         <p className="text-sm text-muted-foreground">ການຈອງມື້ນີ້</p>
-                        <h2 className="text-3xl font-bold mt-2">18</h2>
+                        <h2 className="text-3xl font-bold mt-2">4</h2>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardContent className="p-6">
                         <p className="text-sm text-muted-foreground">ລາຍຮັບທັງໝົດ</p>
-                        <h2 className="text-3xl font-bold mt-2">$4,850</h2>
+                        <h2 className="text-3xl font-bold mt-2">450,000 ກີບ</h2>
                     </CardContent>
                 </Card>
             </div> */}
@@ -184,9 +181,9 @@ export default function AdminBookingPage() {
             <Card className="mb-6">
                 <CardHeader>
                     <div className="mb-2">
-                        <CardTitle>ລາຍຊື່ການຈອງ</CardTitle>
+                        <CardTitle>ລາຍການຈອງ</CardTitle>
                         <CardDescription>
-                            ເບິ່ງ ແລະ ຈັດການບັນທຶກການຈອງທັງໝົດ.
+                            ເບິ່ງ ແລະ ຈັດການບັນທຶກການຈອງທັງໝົດ
                         </CardDescription>
                     </div>
 
@@ -195,7 +192,6 @@ export default function AdminBookingPage() {
                             <Search className="absolute left-2 top-2 size-4 text-muted-foreground" />
                             <Input placeholder="ຄົ້ນຫາການຈອງ..." className="pl-10" />
                         </div>
-                        {/* Actions */}
                         <div>
                             <Button className="cursor-pointer">
                                 <RotateCw className={cn("mr-2 h-4 w-4")} />
@@ -206,26 +202,28 @@ export default function AdminBookingPage() {
                 </CardHeader>
             </Card>
 
-            {/* Main Table Card */}
+            {/* Main Table */}
             <Card>
                 <CardContent>
                     <div className="rounded-lg border overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Booking ID</TableHead>
-                                    <TableHead>Customer</TableHead>
-                                    <TableHead>Court</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Time</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Action</TableHead>
+                                    <TableHead>ລໍາດັບ</TableHead>
+                                    <TableHead>ລະຫັດການຈອງ</TableHead>
+                                    <TableHead>ລູກຄ້າ</TableHead>
+                                    <TableHead>ເດີ່ນ</TableHead>
+                                    <TableHead>ວັນທີ</TableHead>
+                                    <TableHead>ເວລາ</TableHead>
+                                    <TableHead>ສະຖານະ</TableHead>
+                                    <TableHead className="text-right">ຈັດການ</TableHead>
                                 </TableRow>
                             </TableHeader>
 
                             <TableBody>
-                                {bookings.map((booking) => (
-                                    <TableRow key={booking.id}>
+                                {bookings.map((booking, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell className="font-medium">{ (index + 1).toString().padStart(4, "0") }</TableCell>
                                         <TableCell className="font-medium">{booking.id}</TableCell>
                                         <TableCell>{booking.customer}</TableCell>
                                         <TableCell>{booking.court}</TableCell>
@@ -234,10 +232,8 @@ export default function AdminBookingPage() {
                                             {booking.startTime} - {booking.endTime}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge
-                                                variant={"warning"}
-                                            >
-                                                {booking.status}
+                                            <Badge variant={"warning"}>
+                                                {booking.status === "Pending" && "ລໍຖ້າການຢືນຢັນ"}
                                             </Badge>
                                         </TableCell>
 
@@ -251,7 +247,7 @@ export default function AdminBookingPage() {
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem className="cursor-pointer">
                                                         <Eye className="mr-2 size-4" />
-                                                        ເບິ່ງ
+                                                        ເບິ່ງລາຍລະອຽດ
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         className="cursor-pointer"
@@ -268,22 +264,10 @@ export default function AdminBookingPage() {
                             </TableBody>
                         </Table>
                     </div>
-
-                    {/* Pagination */}
-                    <div className="flex items-center justify-between mt-6">
-                        <p className="text-sm text-muted-foreground">
-                            Showing 1 to {bookings.length} of {bookings.length} bookings
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">Previous</Button>
-                            <Button size="sm">1</Button>
-                            <Button variant="outline" size="sm">Next</Button>
-                        </div>
-                    </div>
                 </CardContent>
             </Card>
 
-            {/* ==================== EDIT STATUS DIALOG ==================== */}
+            {/* Edit Status Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
@@ -297,14 +281,13 @@ export default function AdminBookingPage() {
                         <label className="text-sm font-medium mb-2 block">
                             ສະຖານະການຈອງ
                         </label>
-                        <Select value={newStatus} onValueChange={(value: any) => setNewStatus(value)}>
+                        <Select value={newStatus} onValueChange={(value: ChangeBookingStatus) => setNewStatus(value)}>
                             <SelectTrigger className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                                <SelectItem value="Confirmed">Confirmed</SelectItem>
-                                <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                <SelectItem value="Confirmed">ຢືນຢັນແລ້ວ</SelectItem>
+                                <SelectItem value="Cancelled">ຍົກເລີກ</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

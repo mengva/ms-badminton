@@ -14,6 +14,8 @@ export const zodValidationSignUp = z.object({
     fullName: zodValidationFullName,
     email: zodValidationEmail,
     phoneNumber: zodValidationPhoneNumber,
+    // dateOfBrith: zodValidationBirthday,
+    // membershipType: z.enum(["Member", "Regular"]).default("Regular"),
     password: zodValidationPassword,
     confirmPassword: zodValidationConfirmPassword
 }).refine((data) => data.password === data.confirmPassword, {

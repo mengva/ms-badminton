@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Printer } from "lucide-react";
+import { Search, Printer, RotateCw } from "lucide-react";
 import { format } from "date-fns";
 
 import { Button } from "@workspace/ui/components/button";
@@ -23,6 +23,7 @@ import {
     TableHeader,
     TableRow,
 } from "@workspace/ui/components/table";
+import { cn } from "@workspace/ui/lib/utils";
 
 export default function PrintBillPage() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -30,7 +31,7 @@ export default function PrintBillPage() {
     const bills = [
         {
             id: "1",
-            billNo: "INV-20250514001",
+            billNo: "INV-20250514-001",
             customerName: "ທ. ສົມສັກ ວິລະສັກ",
             bookingId: "BK-20250514-001",
             date: new Date("2025-05-14"),
@@ -40,13 +41,13 @@ export default function PrintBillPage() {
         },
         {
             id: "2",
-            billNo: "INV-20250514002",
+            billNo: "INV-20250514-002",
             customerName: "ນ. ອີນທະວົງ ບຸນມະນີ",
             bookingId: "BK-20250514-002",
             date: new Date("2025-05-14"),
             totalAmount: 300000,
-            paidAmount: 150000,
-            status: "PartiallyPaid",
+            paidAmount: 300000,
+            status: "Paid",
         },
     ];
 
@@ -73,22 +74,35 @@ export default function PrintBillPage() {
                     <CardDescription>ເລືອກໃບບິນທີ່ຕ້ອງການພິມ</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="relative mb-6">
-                        <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="ຄົ້ນຫາໃບບິນ ຫຼື ຊື່ລູກຄ້າ..."
-                            className="pl-10"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3">
 
+                        <div className="relative sm:w-80">
+                            <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="ຄົ້ນຫາໃບບິນ ຫຼື ຊື່ລູກຄ້າ..."
+                                className="pl-10"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        {/* Actions */}
+                        <Button className="cursor-pointer">
+                            <RotateCw className={cn("mr-2 h-4 w-4")} />
+                            ໂຫຼດຂໍ້ມູນຄືນໃໝ່
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardContent>
                     <div className="rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Bill No.</TableHead>
-                                    <TableHead>Booking ID</TableHead>
+                                     <TableHead>ລໍາດັບ</TableHead>
+                                    <TableHead>ເລກທີ່ບິນ</TableHead>
+                                    <TableHead>ລະຫັດການຈອງ</TableHead>
                                     <TableHead>ລູກຄ້າ</TableHead>
                                     <TableHead>ວັນທີ</TableHead>
                                     <TableHead className="text-right">ລວມທັງໝົດ</TableHead>
@@ -98,8 +112,9 @@ export default function PrintBillPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredBills.map((bill) => (
-                                    <TableRow key={bill.id}>
+                                {filteredBills.map((bill, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell className="font-mono text-sm">{ (index + 1).toString().padStart(4, "0") }</TableCell>
                                         <TableCell className="font-medium">{bill.billNo}</TableCell>
                                         <TableCell>{bill.bookingId}</TableCell>
                                         <TableCell>{bill.customerName}</TableCell>
@@ -112,7 +127,7 @@ export default function PrintBillPage() {
                                         </TableCell>
                                         <TableCell>
                                             <Badge
-                                                className={bill.status === "Paid" ? "bg-green-500" : "bg-amber-500"}
+                                                variant={bill.status === "Paid" ? "default" : "warning"}
                                             >
                                                 {bill.status === "Paid" ? "ຊຳລະສຳເລັດ" : "ຊຳລະບາງສ່ວນ"}
                                             </Badge>

@@ -26,7 +26,7 @@ export default function ReportHeader({
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-                <DateRangePicker date={date} setDate={setDate} />
+                {/* <DateRangePicker date={date} setDate={setDate} /> */}
                 <ExportButton onExport={onExport} />
             </div>
         </div>

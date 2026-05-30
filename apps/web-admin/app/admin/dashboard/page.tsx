@@ -10,18 +10,6 @@ import {
   CardDescription,
 } from "@workspace/ui/components/card";
 
-import {
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    BarChart,
-    Bar,
-} from "recharts";
-
 import { Button } from "@workspace/ui/components/button";
 
 import {
@@ -60,25 +48,25 @@ import {
 const dashboardCards = [
   {
     title: "ລູກຄ້າທັງໝົດ",
-    value: "120",
+    value: "12",
     icon: Users,
     description: "ລູກຄ້າທີ່ໄດ້ລົງທະບຽນ",
   },
   {
     title: "ພະນັກງານທັງໝົດ",
-    value: "80",
+    value: "2",
     icon: Users,
     description: "ພະນັກງານທີ່ໄດ້ລົງທະບຽນ",
   },
   {
     title: "ການຈອງເດິ່ນ",
-    value: "48",
+    value: "4",
     icon: BsCalendarCheck,
     description: "ການຈອງມື້ນີ້",
   },
   {
     title: "ລາຍຮັບ",
-    value: "$2,450",
+    value: "450,000 ກີບ",
     icon: DollarSign,
     description: "ລາຍຮັບມື້ນີ້",
   },
@@ -88,29 +76,41 @@ const dashboardCards = [
     icon: MdSportsSoccer,
     description: "ມີເດິ່ນ",
   },
+  {
+    title: "ເເຈ້ງເຂົ້າ",
+    value: "4",
+    icon: FiLogIn,
+    description: "ເເຈ້ງເຂົ້າມື້ນີ້",
+  },
+  {
+    title: "ເເຈ້ງອອກ",
+    value: "4",
+    icon: FiLogOut,
+    description: "ເເຈ້ງອອກມື້ນີ້",
+  },
 ];
 
 const recentBookings = [
   {
     id: "BK001",
-    customer: "John Doe",
-    court: "Court A",
+    customer: "ຈອນ ໂດ",
+    court: "ເດີ່ນ A",
     time: "08:00 AM",
-    status: "Completed",
+    status: "ສຳເລັດແລ້ວ",
   },
   {
     id: "BK002",
-    customer: "David",
-    court: "Court B",
+    customer: "ເດວິດ",
+    court: "ເດີ່ນ B",
     time: "09:30 AM",
-    status: "Pending",
+    status: "ລໍຖ້າການອະນຸມັດ",
   },
   {
     id: "BK003",
-    customer: "Alex",
-    court: "Court C",
+    customer: "ອາເລັກ",
+    court: "ເດີ່ນ C",
     time: "10:00 AM",
-    status: "Completed",
+    status: "ສຳເລັດແລ້ວ",
   },
 ];
 
@@ -133,18 +133,18 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild>
+          {/* <Button asChild>
             <Link href="/admin/booking/create">
               ສ້າງການຈອງ
             </Link>
-          </Button>
+          </Button> */}
 
           <Button
             variant="outline"
             asChild
           >
             <Link href="/admin/reports/bookings">
-              ເບິ່ງລາຍງານ
+              ເບິ່ງລາຍງານການຈອງ
             </Link>
           </Button>
         </div>
@@ -222,23 +222,23 @@ export default function DashboardPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>
-                      Booking ID
+                     ລະຫັດການຈອງ
                     </TableHead>
 
                     <TableHead>
-                      Customer
+                      ລູກຄ້າ
                     </TableHead>
 
                     <TableHead>
-                      Court
+                      ເດີ່ນ
                     </TableHead>
 
                     <TableHead>
-                      Time
+                      ເວລາ
                     </TableHead>
 
                     <TableHead>
-                      Status
+                      ສະຖານະ
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -295,11 +295,11 @@ export default function DashboardPage() {
 
                 <div>
                   <p className="font-medium">
-                    Customer checked in
+                    ລູກຄ້າເຊັກອິນ
                   </p>
 
                   <p className="text-sm text-muted-foreground">
-                    Court A - 08:00 AM
+                    ເດີ່ນ A - 08:00 AM
                   </p>
                 </div>
               </div>
@@ -311,11 +311,11 @@ export default function DashboardPage() {
 
                 <div>
                   <p className="font-medium">
-                    Customer checked out
+                    ລູກຄ້າເຊັກເອົ້າແລ້ວ
                   </p>
 
                   <p className="text-sm text-muted-foreground">
-                    Court B - 09:00 AM
+                    ເດີ່ນ B - 09:00 AM
                   </p>
                 </div>
               </div>
@@ -327,11 +327,11 @@ export default function DashboardPage() {
 
                 <div>
                   <p className="font-medium">
-                    Payment received
+                    ໄດ້ຮັບເງິນແລ້ວ
                   </p>
 
                   <p className="text-sm text-muted-foreground">
-                    Booking BK003
+                    ການຈອງ BK003
                   </p>
                 </div>
               </div>

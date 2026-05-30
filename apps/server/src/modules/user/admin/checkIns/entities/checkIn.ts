@@ -4,6 +4,7 @@ import {
     text,
     timestamp,
     index,
+    varchar,
 } from "drizzle-orm/pg-core";
 import { users } from "@/server/modules/user/entities";
 import { bookings } from "../../bookings/entities";
@@ -11,6 +12,7 @@ import { bookings } from "../../bookings/entities";
 // ==================== 10. Check Ins ====================
 export const checkIns = pgTable("check_ins", {
     id: uuid("id").defaultRandom().primaryKey(),
+    checkInCode: varchar("check_in_code", { length: 30 }).notNull().unique(),
     bookingId: uuid("booking_id").notNull().unique().references(() => bookings.id, { onDelete: "cascade" }),
     staffId: uuid("staff_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),

@@ -5,6 +5,8 @@ import { Helper } from "../utils";
 import { ErrorHandler } from "@/server/packages/utils";
 import { Context as HonoContext } from "hono";
 import { getUserAgent } from "../server/trpc/context";
+import { and, eq } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 
 export const generateUser = async (c: HonoContext) => {
     try {
@@ -29,6 +31,14 @@ export const generateUser = async (c: HonoContext) => {
             return;
         }
 
+        const [ownerIsMain] = await db.select({
+            isMain: courtOwners.isMain
+        }).from(courtOwners).where(
+            eq(courtOwners.isMain, true)
+        ).execute()
+
+        const isMain = Boolean(!ownerIsMain?.isMain)
+
         const password = "msBadminton09@&.com";
 
         const hashedPassword = await Helper.bcryptHash(password);
@@ -45,6 +55,21 @@ export const generateUser = async (c: HonoContext) => {
             const message = ErrorHandler.getErrorMessage(validationUserInfo);
             console.error("Validation failed for user info:", message);
             return;
+        }
+
+        // Check if phoneNumber already exists (only active users)
+        const existingUserPhoneNumber = await db.query.users.findFirst({
+            where: and(
+                eq(users.phoneNumber, validationUserInfo.phoneNumber),
+                eq(users.isActive, true)
+            ),
+        });
+
+        if (existingUserPhoneNumber) {
+            throw new TRPCError({
+                code: "CONFLICT", // Better than FORBIDDEN for duplicate email
+                message: "A user with this phoneNumber already exists.",
+            });
         }
 
         await db.transaction((async (tx) => {
@@ -75,6 +100,7 @@ export const generateUser = async (c: HonoContext) => {
                 userId: newUserId,
                 companyName: "MS Badminton",
                 address: "123 Main Street, City, Country",
+                isMain: isMain
             });
 
             console.log("User generated successfully.");

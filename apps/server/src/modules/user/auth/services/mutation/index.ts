@@ -3,11 +3,31 @@ import { tRPCAuthServices } from "../../utils";
 import { HandlerSuccess, tRPCErrorServices } from "@/server/utils";
 import { tokenName } from "@/server/packages/utils";
 import { ServerResponseDto, UserRoleDto } from "@/server/packages/types";
+import { tRPCCustomerAuthServices } from "../../utils/customerAuth";
 
 export class tRPCUserAuthMutationServices {
     public static async signIn(ctx: MyContext): Promise<ServerResponseDto | void> {
         try {
             return await tRPCAuthServices.signIn(ctx);
+        } catch (error) {
+            // Log the error and return standardized error message
+            throw tRPCErrorServices.tRPCError(error);
+        }
+    }
+
+    public static async login(ctx: MyContext): Promise<ServerResponseDto | void> {
+        try {
+            return await tRPCCustomerAuthServices.login(ctx);
+        } catch (error) {
+            // Log the error and return standardized error message
+            throw tRPCErrorServices.tRPCError(error);
+        }
+    }
+
+
+    public static async register(ctx: MyContext): Promise<ServerResponseDto | void> {
+        try {
+            return await tRPCCustomerAuthServices.register(ctx);
         } catch (error) {
             // Log the error and return standardized error message
             throw tRPCErrorServices.tRPCError(error);
