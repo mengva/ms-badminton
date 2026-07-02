@@ -172,7 +172,7 @@ export const bookings = pgTable("bookings", {
 export const checkIns = pgTable("check_ins", {
     id: uuid("id").defaultRandom().primaryKey(),
     checkInCode: varchar("check_in_code", { length: 30 }).notNull().unique(),
-    bookingId: uuid("booking_id").notNull().unique().references(() => bookings.id, { onDelete: "cascade" }),
+    bookingId: uuid("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
     staffId: uuid("staff_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     checkinTime: timestamp("checkin_time", { withTimezone: true }).defaultNow().notNull(),
@@ -189,7 +189,7 @@ export const checkIns = pgTable("check_ins", {
 export const checkOuts = pgTable("check_outs", {
     id: uuid("id").defaultRandom().primaryKey(),
     checkOutCode: varchar("check_out_code", { length: 30 }).notNull().unique(),
-    bookingId: uuid("booking_id").notNull().unique().references(() => bookings.id, { onDelete: "cascade" }),
+    bookingId: uuid("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
     staffId: uuid("staff_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     checkOutTime: timestamp("checkout_time", { withTimezone: true }).defaultNow().notNull(),

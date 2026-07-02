@@ -1,6 +1,6 @@
 import db from "@/server/config/db";
 import { staffs, userCredentials, users } from "@/server/db";
-import { ZodValidationcreateNewStaff, ZodValidationSearchQueryStaff } from "@/server/packages/validations/master-data";
+import { ZodValidationCreateNewStaff, ZodValidationSearchQueryStaff } from "@/server/packages/validations/master-data";
 import { MyContext } from "@/server/server/trpc/context";
 import { HandlerSuccess, Helper, tRPCErrorServices } from "@/server/utils";
 import { TRPCError } from "@trpc/server";
@@ -14,7 +14,7 @@ export class tRPCManageStaffMutationServices {
      */
     public static async createNewStaff(ctx: MyContext) {
         try {
-            const info = ctx.bodyInfo as ZodValidationcreateNewStaff;
+            const info = ctx.bodyInfo as ZodValidationCreateNewStaff;
             const userAgent = ctx.userAgent || "";
 
             // Check if email already exists (only active users)
@@ -115,9 +115,10 @@ export class tRPCManageStaffMutationServices {
                 ));
 
             const total = totalResult[0]?.total ?? 1;
+            const queryInfo = { ... tRPCManageStaffQueries.selectStaffInfo };
             // query staff data
             const results = await db
-                .select({ ...tRPCManageStaffQueries.selectStaffInfo })
+                .select({ ...queryInfo })
                 .from(users)
                 .innerJoin(staffs, eq(users.id, staffs.userId))
                 .where(and(

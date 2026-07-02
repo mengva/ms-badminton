@@ -261,7 +261,7 @@ export default function BookingPaymentPage() {
                                         <TableCell>
                                             {format(payment.bookingDate, "dd/MM/yyyy")} <br />
                                             <span className="text-sm text-muted-foreground">
-                                                {payment.startTime} - {payment.endTime}
+                                                {payment.startTime} - {payment.endTime} PM
                                             </span>
                                         </TableCell>
                                         <TableCell className="font-medium">

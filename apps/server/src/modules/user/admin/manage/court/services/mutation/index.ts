@@ -105,14 +105,14 @@ export class tRPCManageCourtMutationServices {
             const { courtType, ...courtInfo } = input;
 
             // === Validation: Court Type ===
-            const courtTypeInfo = await db.query.courtTypes.findFirst({
+            const typeInfo = await db.query.courtTypes.findFirst({
                 where: and(
                     eq(courtTypes.typeName, courtType),
                     eq(courtTypes.isActive, true)
                 ),
             });
 
-            if (!courtTypeInfo) {
+            if (!typeInfo) {
                 throw new TRPCError({
                     code: "NOT_FOUND",
                     message: "Court type not found",
@@ -120,11 +120,11 @@ export class tRPCManageCourtMutationServices {
             }
 
             // === Validation: Main Court Owner ===
-            const courtOwnerInfo = await db.query.courtOwners.findFirst({
+            const ownerInfo = await db.query.courtOwners.findFirst({
                 where: eq(courtOwners.isMain, true),
             });
 
-            if (!courtOwnerInfo) {
+            if (!ownerInfo) {
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "No main court owner found in the system",
@@ -135,8 +135,8 @@ export class tRPCManageCourtMutationServices {
                 .insert(courts)
                 .values({
                     ...courtInfo,
-                    typeId: courtTypeInfo.id,
-                    ownerId: courtOwnerInfo.userId,
+                    typeId: typeInfo.id,
+                    ownerId: ownerInfo.userId,
                 })
                 .returning({ id: courts.id });
 

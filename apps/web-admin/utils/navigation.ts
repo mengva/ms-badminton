@@ -182,7 +182,7 @@ export const navigations: NavItem[] = [
                 isActive: false,
             },
             {
-                name: "ພິມໃບບິນ",
+                name: "ພິມໃບບິນເເຈ້ງອອກ",
                 href: "/admin/check-out/print-bill",
                 icon: FiPrinter,
                 isActive: false,
@@ -216,7 +216,7 @@ export const navigations: NavItem[] = [
                 isActive: false,
             },
             {
-                name: "ພິມໃບບິນ",
+                name: "ພິມໃບບິນລວມຍອດຊຳລະ",
                 href: "/admin/finance/print-bill",
                 icon: FiPrinter,
                 isActive: false,
