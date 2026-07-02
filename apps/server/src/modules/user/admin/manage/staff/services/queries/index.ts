@@ -27,7 +27,6 @@ export class tRPCManageStaffQueries {
     public static async list(ctx: MyContext, input: ZodValidationFilter) {
         try {
             const userRole = ctx.userInfo.role;
-            console.log("userRole", userRole);
             const { limit, page } = input;
             const offset = (page - 1) * limit;
 

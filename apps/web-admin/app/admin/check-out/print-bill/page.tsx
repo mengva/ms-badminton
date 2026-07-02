@@ -66,8 +66,8 @@ export default function PrintBillPage() {
                     <div className="flex justify-center">
                         <Image src={ImageLoGo} width={100} height={100} alt="logo"/>
                     </div>
-                    <div className="text-2xl font-bold mb-1">ໃບບິນ / ໃບຮັບເງິນ</div>
-                    <p className="text-muted-foreground">Invoice / Receipt</p>
+                    <div className="text-2xl font-bold mb-1">ໃບບິນເເຈ້ງອອກ / ໃບຮັບເງິນ</div>
+                    <p className="text-muted-foreground">Invoice Check Out / Receipt</p>
 
                     <Badge variant="outline" className="mt-4 text-base px-6 py-1.5">
                         {billData.billId}
@@ -137,8 +137,8 @@ export default function PrintBillPage() {
                         </div>
 
                         <div className="flex justify-between text-lg">
-                            <span className="text-muted-foreground">ຄ່າຈອງຈ່າຍມາແລ້ວ</span>
-                            <span>{billData.paidAmount.toLocaleString()} ກີບ</span>
+                            <span className="text-orange-600">ຄ່າມັດຈຳເດິ່ນຈ່າຍເເລ້ວ</span>
+                            <span className="text-orange-600">{billData.paidAmount.toLocaleString()} ກີບ</span>
                         </div>
 {/* 
                          <div className="flex justify-between text-lg">
@@ -147,8 +147,9 @@ export default function PrintBillPage() {
                         </div> */}
 
 
-                        <div className="flex justify-between text-xl font-semibold text-green-600 bg-green-600/10 p-4 rounded-lg">
-                            <span>ຍັງຕ້ອງຈ່າຍ</span>
+{/*  bg-green-600/10 p-4 rounded-lg */}
+                        <div className="flex justify-between text-xl font-semibold text-green-600">
+                            <span>ຄ່າເດິ່ນທີ່ເຫຼືອທັງໝົດຈ່າຍເເລ້ວ</span>
                             <span>{billData.remainingAmount.toLocaleString()} ກີບ</span>
                         </div>
                     </div>

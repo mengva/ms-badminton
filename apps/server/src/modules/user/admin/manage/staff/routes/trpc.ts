@@ -1,5 +1,5 @@
 import { tRPCUserAuthMiddleware } from "@/server/middleware/authTRPC";
-import { zodValidationcreateNewStaff, zodValidationSearchQueryStaff, zodValitionUserId } from "@/server/packages/validations/master-data";
+import { zodValidationCreateNewStaff, zodValidationSearchQueryStaff, zodValitionUserId } from "@/server/packages/validations/master-data";
 import { zodValidationFilter, zodValidationGlobalStatus } from "@/server/packages/validations";
 import { publicProcedure, router } from "@/server/server/trpc/procedures";
 import { tRPCManageStaffMutationServices } from "../services/mutation";
@@ -42,7 +42,7 @@ export const tRPCManageStaffRouter = router({
      */
     createNewStaff: publicProcedure
         .use(tRPCUserAuthMiddleware.isUserAuth)
-        .input(zodValidationcreateNewStaff)
+        .input(zodValidationCreateNewStaff)
         .mutation(async ({ input, ctx }) => {
             // Attach input to context so service can access it
             ctx.bodyInfo = input;

@@ -1,5 +1,5 @@
 import { ServerResponseDto } from '@/admin/packages/types';
-import { ZodValidationcreateNewStaff, zodValidationcreateNewStaff } from '@/admin/packages/validations/master-data';
+import { ZodValidationCreateNewStaff, zodValidationCreateNewStaff } from '@/admin/packages/validations/master-data';
 import { trpc } from '@/app/trpc';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@workspace/ui/components/button';
@@ -38,8 +38,8 @@ function AddStaffDialogComponent({
 }: AddStaffDialogDto) {
 
     const [showConfirmClose, setShowConfirmClose] = useState(false);
-    const form = useForm<ZodValidationcreateNewStaff>({
-        resolver: zodResolver(zodValidationcreateNewStaff),
+    const form = useForm<ZodValidationCreateNewStaff>({
+        resolver: zodResolver(zodValidationCreateNewStaff),
         defaultValues: {
             fullName: "",
             email: "",
@@ -96,7 +96,7 @@ function AddStaffDialogComponent({
         }
     });
 
-    const onSubmit = (values: ZodValidationcreateNewStaff) => {
+    const onSubmit = (values: ZodValidationCreateNewStaff) => {
         createNewStaffMutation.mutate(values);
     }
 
