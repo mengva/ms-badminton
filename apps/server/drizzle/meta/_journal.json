@@ -15,6 +15,13 @@
       "when": 1779251700812,
       "tag": "0001_workable_maelstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782970615900,
+      "tag": "0002_useful_la_nuit",
+      "breakpoints": true
     }
   ]
 }
