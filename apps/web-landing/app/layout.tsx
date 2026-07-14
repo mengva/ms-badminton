@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { TRPCProvider } from "./trpc";
 import { Metadata } from "next";
+import TopBar from "@/components/TopBar";
 
 const customizeFont = localFont({
   src: "../../../packages/src/fonts/Phetsarath_OT.ttf",
@@ -36,6 +37,7 @@ export default function RootLayout({
             <TRPCProvider>
               <Providers>
                 <>
+                  <TopBar />
                   {children}
                   <Toaster position="bottom-right" />
                 </>

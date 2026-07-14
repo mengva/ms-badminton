@@ -116,7 +116,7 @@ export class tRPCAuthServices {
             // 2. Generate a 6-digit random code
             const otpCode = Helper.generateOTP(); // e.g., "123456"
 
-            return await db.transaction(async (tx) => {
+            return await db.transaction(async (_) => {
 
                 // 3. Store in Redis with an expiration (e.g.,   300 seconds)
                 // Key format: "reset_password:email@example.com"

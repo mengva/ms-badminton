@@ -17,6 +17,8 @@ export class tRPCManageStaffMutationServices {
             const info = ctx.bodyInfo as ZodValidationCreateNewStaff;
             const userAgent = ctx.userAgent || "";
 
+            console.log("Creating new staff member with info:", info);
+
             // Check if email already exists (only active users)
             const existingUser = await db.query.users.findFirst({
                 where: and(

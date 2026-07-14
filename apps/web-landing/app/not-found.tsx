@@ -20,13 +20,13 @@ export default function NotFound() {
                 <CardContent className="space-y-4">
                     <div className="flex flex-col sm:flex-row gap-3">
                         <Button asChild className="flex-1">
-                            <Link href="/admin/dashboard">
+                            <Link href="/">
                                 <Home className="mr-2 h-4 w-4" />
                                 ກັບໄປທີ່ໜ້າຫຼັກ
                             </Link>
                         </Button>
                         <Button asChild variant="outline" className="flex-1">
-                            <Link href="/admin/dashboard">
+                            <Link href="/">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 ກັບຄືນ
                             </Link>

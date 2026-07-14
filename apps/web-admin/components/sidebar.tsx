@@ -14,11 +14,11 @@ import {
 } from "@workspace/ui/components/collapsible";
 
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
-import { navigations } from "@/utils/navigation";
 import Image from "next/image";
 import MSBadmintionLogo from "../public/images/MS.badmintion_logo1.png";
+import { NavItem } from "@/utils";
 
-export default function SidebarPage() {
+export default function SidebarPage({ navigations }: { navigations: NavItem[] }) {
     const pathname = usePathname();
 
     const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(() => {

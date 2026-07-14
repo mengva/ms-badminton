@@ -52,7 +52,7 @@ export type NavItem = {
 };
 
 // -------------------- Navigations --------------------
-export const navigations: NavItem[] = [
+export const staffNavigations: NavItem[] = [
     {
         name: "ແຜງຄວບຄຸມ",
         href: "/admin/dashboard",
@@ -73,18 +73,12 @@ export const navigations: NavItem[] = [
                 icon: MdPeopleAlt,
                 isActive: false,
             },
-            {
-                name: "ຈັດການຂໍ້ມູນລູກຄ້າ",
-                href: "/admin/master-data/customers",
-                icon: MdPersonSearch,
-                isActive: false,
-            },
-            {
-                name: "ຈັດການຂໍ້ມູນເຈົ້າຂອງເດີ່ນ",
-                href: "/admin/master-data/court-owners",
-                icon: MdManageAccounts,
-                isActive: false,
-            },
+            // {
+            //     name: "ຈັດການຂໍ້ມູນລູກຄ້າ",
+            //     href: "/admin/master-data/customers",
+            //     icon: MdPersonSearch,
+            //     isActive: false,
+            // },
             {
                 name: "ຈັດການຂໍ້ມູນເດີ່ນ",
                 href: "/admin/master-data/courts",
@@ -224,6 +218,100 @@ export const navigations: NavItem[] = [
         ],
     },
 
+    // 6. ລາຍງານ
+    {
+        name: "ລາຍງານ",
+        href: "/admin/reports",
+        icon: TbReportAnalytics,
+        isActive: false,
+        children: [
+            {
+                name: "ລາຍງານຂໍ້ມູນພະນັກງານ",
+                href: "/admin/reports/staffs",
+                icon: MdPeopleAlt,
+                isActive: false,
+            },
+            {
+                name: "ລາຍງານຂໍ້ມູນເດີ່ນ",
+                href: "/admin/reports/courts",
+                icon: MdSportsSoccer,
+                isActive: false,
+            },
+            {
+                name: "ລາຍງານການຈອງເດີ່ນ",
+                href: "/admin/reports/bookings",
+                icon: BsCalendarCheck,
+                isActive: false,
+            },
+            {
+                name: "ລາຍງານແຈ້ງເຂົ້າ",
+                href: "/admin/reports/check-in",
+                icon: FiLogIn,
+                isActive: false,
+            },
+            {
+                name: "ລາຍງານແຈ້ງອອກ",
+                href: "/admin/reports/check-out",
+                icon: FiLogOut,
+                isActive: false,
+            },
+            {
+                name: "ລາຍງານການຊຳລະເງິນ",
+                href: "/admin/reports/payments",
+                icon: TbReport,
+                isActive: false,
+            },
+        ],
+    },
+];
+
+export const ownerNavigations: NavItem[] = [
+    {
+        name: "ແຜງຄວບຄຸມ",
+        href: "/admin/dashboard",
+        icon: LucideLayoutDashboard ,
+        isActive: false,
+        children: [],
+    },
+    // 1. ຈັດການຂໍ້ມູນພື້ນຖານ
+    {
+        name: "ຈັດການຂໍ້ມູນພື້ນຖານ",
+        href: "/admin/master-data",
+        icon: MdManageAccounts,
+        isActive: false,
+        children: [
+            {
+                name: "ຈັດການຂໍ້ມູນພະນັກງານ",
+                href: "/admin/master-data/staffs",
+                icon: MdPeopleAlt,
+                isActive: false,
+            },
+            // {
+            //     name: "ຈັດການຂໍ້ມູນລູກຄ້າ",
+            //     href: "/admin/master-data/customers",
+            //     icon: MdPersonSearch,
+            //     isActive: false,
+            // },
+            {
+                name: "ຈັດການຂໍ້ມູນເຈົ້າຂອງເດີ່ນ",
+                href: "/admin/master-data/court-owners",
+                icon: MdManageAccounts,
+                isActive: false,
+            },
+            {
+                name: "ຈັດການຂໍ້ມູນເດີ່ນ",
+                href: "/admin/master-data/courts",
+                icon: MdSportsSoccer,
+                isActive: false,
+            },
+            {
+                name: "ຈັດການຂໍ້ມູນປະເພດເດີ່ນ",
+                href: "/admin/master-data/court-types",
+                icon: MdCategory,
+                isActive: false,
+            },
+        ],
+    },
     // 6. ລາຍງານ
     {
         name: "ລາຍງານ",

@@ -1,5 +1,6 @@
 'use client';
 
+import { ChooseStartEndDate } from "@/components/chooseStartEndDate";
 import { DateRangePicker } from "./DateRangePicker";
 import { ExportButton } from "./ExportButton";
 import { useState } from "react";
@@ -27,6 +28,7 @@ export default function ReportHeader({
 
             <div className="flex flex-wrap items-center gap-3">
                 {/* <DateRangePicker date={date} setDate={setDate} /> */}
+                <ChooseStartEndDate/>
                 <ExportButton onExport={onExport} />
             </div>
         </div>

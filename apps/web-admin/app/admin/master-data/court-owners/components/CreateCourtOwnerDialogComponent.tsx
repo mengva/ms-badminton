@@ -77,11 +77,11 @@ function CreateCourtOwnerDialogComponent({
         {/* === Add Staff Dialog === */}
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
             <DialogTrigger asChild>
-                <div>
+                {/* <div>
                     <Button type='button' variant="default" onClick={() => setOpen(true)} className="cursor-pointer">
                         + ເພີ່ມເຈົ້າຂອງເດິ່ນໃໝ່
                     </Button>
-                </div>
+                </div> */}
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>

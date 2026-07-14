@@ -7,6 +7,9 @@ import { AppSidebar } from "./app-sidebar"
 import TopbarPage from "./topbar"
 import { trpc } from "@/app/trpc"
 import LoadingSpinnerComponent from "./loading"
+import { NavItem, ownerNavigations, staffNavigations } from "@/utils"
+import NotFound from "@/app/not-found"
+import { usePathname } from "next/navigation"
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -19,7 +22,7 @@ interface UserContextDto {
   isLoading: boolean;
   isRefetching: boolean;
   refetch: () => void;
-  setUserRole:React.Dispatch<React.SetStateAction<UserRoleDto>>;
+  setUserRole: React.Dispatch<React.SetStateAction<UserRoleDto>>;
 }
 
 export const UserRoleContext = createContext<UserContextDto | undefined>(undefined);
@@ -27,7 +30,9 @@ export const UserRoleContext = createContext<UserContextDto | undefined>(undefin
 const AdminLayoutPage = memo(({ children }: AdminLayoutProps) => {
 
   const [mounted, setMounted] = useState(false);
-  const [userRole, setUserRole] = useState("Customer" as UserRoleDto)
+  const [userRole, setUserRole] = useState("Customer" as UserRoleDto);
+  const [navigations, setNavigations] = useState([] as NavItem[]);
+  const path = usePathname();
 
   const {
     data: response,
@@ -40,11 +45,11 @@ const AdminLayoutPage = memo(({ children }: AdminLayoutProps) => {
   });
 
   useEffect(() => {
-    const role = response?.data as UserRoleDto;
-    if (role && role !== "Customer") {
-      setUserRole(role);
-    }
-  }, [response?.data]);
+    const role = response?.data as UserRoleDto
+    if (!role) return
+    setUserRole(role)
+    setNavigations(role === "Staff" ? staffNavigations : role === "Owner" ? ownerNavigations : [])
+  }, [response?.data])
 
   useEffect(() => {
     setMounted(true);
@@ -55,17 +60,44 @@ const AdminLayoutPage = memo(({ children }: AdminLayoutProps) => {
     return null;
   }
 
+  if (navigations.length === 0 || userRole === "Customer") {
+    return <LoadingSpinnerComponent />
+  }
+
+  const handleCheckUserPermission = (navigations: NavItem[]) => {
+    return navigations.some(nav => {
+      if (nav.children.length > 0) {
+        return nav.children.some(child => path.startsWith(child.href));
+      }
+      return path.startsWith(nav.href);
+    });
+  }
+
+  if (userRole === "Owner") {
+    const isOwnerRoute = handleCheckUserPermission(ownerNavigations);
+    if (!isOwnerRoute) {
+      return <NotFound />
+    }
+  }
+
+  if (userRole === "Staff") {
+    const isStaffRoute = handleCheckUserPermission(staffNavigations);
+    if (!isStaffRoute) {
+      return <NotFound />
+    }
+  }
+
   return (
     <>
       {
-        (isLoading || userRole === "Customer") ?
+        (isLoading) ?
           <LoadingSpinnerComponent /> :
           <UserRoleContext.Provider value={{ userRole, refetch, isLoading, isRefetching, setUserRole }}>
             <SidebarProvider>
-              <AppSidebar />
+              <AppSidebar navigations={navigations} />
               <SidebarContent>
                 <main>
-                  <TopbarPage />
+                  <TopbarPage userRole={userRole}/>
                   <div className="p-4">
                     {children}
                   </div>

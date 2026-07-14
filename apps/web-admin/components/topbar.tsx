@@ -83,7 +83,7 @@ const mockApplications = [
     },
 ];
 
-export default function TopbarPage() {
+export default function TopbarPage({ userRole, }: { userRole: "Staff" | "Owner" | "Customer" }) {
     const useUserContext = useContext(UserRoleContext);
     const router = useRouter();
     const { theme, setTheme } = useTheme();
@@ -145,7 +145,7 @@ export default function TopbarPage() {
             <header className="flex sticky top-0 z-30 h-16 items-center justify-between border-b bg-background px-6">
                 <div className="flex items-center gap-4">
                     <SidebarTrigger/>
-                    <h1 className="text-xl font-semibold">{t.adminDashboard}</h1>
+                    <h1 className="text-xl font-semibold">{userRole === "Owner" ? "ເຈົ້າຂອງ" : "ພະນັກງານ"}</h1>
                 </div>
 
                 <div className="flex items-center gap-3">

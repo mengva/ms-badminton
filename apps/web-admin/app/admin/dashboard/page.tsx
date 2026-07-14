@@ -42,6 +42,8 @@ import {
   Activity,
   TrendingUp,
 } from "lucide-react";
+import { useContext, useEffect, useState } from "react";
+import { UserRoleContext } from "@/components/admin-layout";
 
 // ==================== MOCK DATA ====================
 
@@ -117,6 +119,17 @@ const recentBookings = [
 // ==================== PAGE ====================
 
 export default function DashboardPage() {
+  const useUserContext = useContext(UserRoleContext);
+
+  const [dashboardList, setDashboardList] = useState([] as typeof dashboardCards);
+
+  useEffect(() => {
+    if (useUserContext?.userRole === "Owner") {
+      setDashboardList(dashboardCards);
+    }else{
+      setDashboardList(dashboardCards.filter(item => item.title !== "ລາຍຮັບ"));
+    }
+  }, [useUserContext?.userRole]);
   return (
     <div className="w-full min-h-screen">
       {/* ==================== HEADER ==================== */}
@@ -153,7 +166,7 @@ export default function DashboardPage() {
       {/* ==================== STATISTICS ==================== */}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-        {dashboardCards.map((item, index) => {
+        {dashboardList.map((item, index) => {
           const Icon = item.icon;
 
           return (

@@ -1,3 +1,4 @@
+// app/courts/page.tsx
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -128,39 +129,58 @@ export default function CourtsPage() {
     <div className="min-h-screen py-10">
       <div className="max-w-7xl mx-auto px-6">
         <div className="mb-10">
-          <h1 className="text-4xl font-bold tracking-tight">ຊອກຫາ ແລະ ຈອງສະໜາມ</h1>
-          <p className="text-lg mt-2">ສະຖານະພາບທັນສະໄຫມ • ຈອງໄດ້ທັນທີ</p>
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900">ຊອກຫາ ແລະ ຈອງສະໜາມ</h1>
+          <p className="text-lg text-gray-600 mt-2">ສະຖານະພາບທັນສະໄຫມ • ຈອງໄດ້ທັນທີ</p>
         </div>
 
         {/* Filters */}
-        <div className="space-y-6">
+        <div className=" p-6 rounded-2xl shadow-sm mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative md:col-span-2">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 cursor-pointer" />
+            <Search className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
             <Input
               placeholder="ຊອກຫາຕາມຊື່ສະໜາມ, ປະເພດ, ຫຼືສະຖານທີ່..."
-              className="pl-11 h-10"
+              className="pl-11"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          <div className='grid grid-cols-4'>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="ທຸກສະຖານະ" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">ທຸກສະຖານະ</SelectItem>
-                <SelectItem value="Available">ຫວ່າງ</SelectItem>
-                <SelectItem value="Occupied">ກຳລັງໃຊ້ງານ</SelectItem>
-                <SelectItem value="Booked">ຖືກຈອງແລ້ວ</SelectItem>
-                <SelectItem value="Maintenance">ບຳລຸງບຳບັດ</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={selectedType} onValueChange={setSelectedType}>
+            <SelectTrigger>
+              <SelectValue placeholder="ທຸກປະເພດ" />
+            </SelectTrigger>
+            <SelectContent>
+              {courtTypes.map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <SelectTrigger>
+              <SelectValue placeholder="ທຸກສະຖານະ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">ທຸກສະຖານະ</SelectItem>
+              <SelectItem value="Available">ຫວ່າງ</SelectItem>
+              <SelectItem value="Occupied">ກຳລັງໃຊ້ງານ</SelectItem>
+              <SelectItem value="Booked">ຖືກຈອງແລ້ວ</SelectItem>
+              <SelectItem value="Maintenance">ບຳລຸງບຳບັດ</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as 'name' | 'rate')}>
+            <SelectTrigger>
+              <SelectValue placeholder="ຮຽງຕາມ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">ຊື່ສະໜາມ (A-Z)</SelectItem>
+              <SelectItem value="rate">ລາຄາຕໍ່ຊົ່ວໂມງ (ຕ່ຳ - ສູງ)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="flex justify-between my-6">
+        <div className="flex justify-between mb-6">
           <p className="text-gray-600">
             ສະແດງ <span className="font-semibold">{filteredCourts.length}</span> ສະໜາມ
           </p>

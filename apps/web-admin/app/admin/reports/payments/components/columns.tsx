@@ -12,6 +12,7 @@ export type Payment = {
     paymentMethod: string;
     paymentStatus: string;
     paymentDate: string;
+    staffName: string;
     referenceNumber?: string;
 };
 
@@ -51,6 +52,10 @@ export const columns: ColumnDef<Payment>[] = [
     {
         accessorKey: "paymentDate",
         header: "ວັນທີຊຳລະ",
+    },
+    {
+        accessorKey: "staffName",
+        header: "ພະນັກງານ",
     },
     { accessorKey: "referenceNumber", header: "ເລກອ້າງອິງ" },
 ];

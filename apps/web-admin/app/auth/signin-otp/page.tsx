@@ -55,10 +55,12 @@ export default function SignInWithCodeFormPage() {
     }
   });
 
+  const utils = trpc.useUtils()
   const signInOTPMutation = trpc.app.user.auth.signInOTP.useMutation({
-    onSuccess: (data: ServerResponseDto) => {
+    onSuccess: async (data: ServerResponseDto) => {
       if (data && data.success) {
         toast.success(data.message);
+        await utils.app.user.get.getUserRole.invalidate();
         return router.push("/admin/dashboard");
       }
     },

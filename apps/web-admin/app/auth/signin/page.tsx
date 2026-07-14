@@ -27,10 +27,12 @@ export default function SignInPage() {
         },
     });
 
+    const utils = trpc.useUtils()
     const signInMutation = trpc.app.user.auth.signIn.useMutation({
-        onSuccess: (data: ServerResponseDto) => {
+        onSuccess: async (data: ServerResponseDto) => {
             if (data?.success) {
                 toast.success(data.message);
+                await utils.app.user.get.getUserRole.invalidate()
                 router.push("/admin/dashboard");
             }
         },

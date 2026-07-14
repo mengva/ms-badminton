@@ -14,6 +14,7 @@ export const demoPayments = [
         paymentMethod: "QR Code",
         paymentStatus: "Paid",
         paymentDate: "2026-05-14 10:30",
+        staffName: "ນ. ສີສຸລິຍາ",
         referenceNumber: "PAY-20260514001",
     },
     {
@@ -25,6 +26,7 @@ export const demoPayments = [
         paymentMethod: "Cash",
         paymentStatus: "Paid",
         paymentDate: "2026-05-15 08:30",
+        staffName: "ນ. ສີສຸລິຍາ",
         referenceNumber: "PAY-20260515001",
     },
 ];
